@@ -8,6 +8,7 @@ export interface BlogFormData {
   title: string;
   subtitle?: string;
   image?: string;
+  image_path?: string;
   content: string;
   author: string;
 }

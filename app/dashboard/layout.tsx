@@ -86,7 +86,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         setUser(null);
-        router.push("/auth/login");
+        router.push("/");
       } else if (session?.user) {
         setUser(session.user);
       }
@@ -100,7 +100,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       const supabase = createClient();
       await supabase.auth.signOut();
       toast.success("Signed out successfully");
-      router.push("/auth/login");
+      router.push("/");
     } catch (error) {
       console.error("Error signing out:", error);
       toast.error("Failed to sign out");

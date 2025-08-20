@@ -21,6 +21,7 @@ export async function createBlog(formData: BlogFormData) {
     title: formData.title,
     subtitle: formData.subtitle || null,
     image: formData.image || null,
+    image_path: formData.image_path || null,
     content: formData.content,
     author: formData.author,
     user_id: user.id,
@@ -57,6 +58,7 @@ export async function updateBlog(id: string, formData: BlogFormData) {
     title: formData.title,
     subtitle: formData.subtitle || null,
     image: formData.image || null,
+    image_path: formData.image_path || null,
     content: formData.content,
     author: formData.author,
   };

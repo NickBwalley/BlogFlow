@@ -16,7 +16,14 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { Home, FileText, Rss, Calendar, Tag } from "lucide-react";
+import {
+  Home,
+  FileText,
+  Rss,
+  Calendar,
+  Tag,
+  LayoutDashboard,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -25,6 +32,11 @@ const publicNavItems = [
     title: "Home",
     href: "/",
     icon: Home,
+  },
+  {
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
   },
   {
     title: "All Blogs",

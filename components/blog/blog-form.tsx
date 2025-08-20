@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,11 +8,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { BlogFormData, Blog } from "@/types/blog";
 import { createBlog, updateBlog } from "@/lib/actions/blog";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
+import {
+  Dropzone,
+  DropzoneContent,
+  DropzoneEmptyState,
+} from "@/components/dropzone";
+import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { getBlogImageUrl } from "@/lib/utils/image-utils";
 
 interface BlogFormProps {
   blog?: Blog;
@@ -21,16 +29,60 @@ interface BlogFormProps {
 
 export function BlogForm({ blog, mode }: BlogFormProps) {
   const router = useRouter();
+  const { userId } = useCurrentUser();
   const [formData, setFormData] = useState<BlogFormData>({
     title: blog?.title || "",
     subtitle: blog?.subtitle || "",
     image: blog?.image || "",
+    image_path: blog?.image_path || "",
     content: blog?.content || "",
     author: blog?.author || "",
   });
 
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Dropzone configuration
+  const dropzoneProps = useSupabaseUpload({
+    bucketName: "blog-images",
+    path: userId || "anonymous",
+    allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    maxFiles: 1,
+    maxFileSize: 5 * 1024 * 1024, // 5MB to match migration
+    upsert: true, // Allow overwriting existing files
+  });
+
+  // Reset dropzone when blog data changes (for edit mode)
+  useEffect(() => {
+    if (blog && mode === "edit") {
+      // Clear any existing files in dropzone when switching to edit mode
+      dropzoneProps.setFiles([]);
+      // Reset upload state
+      if (dropzoneProps.setErrors) {
+        dropzoneProps.setErrors([]);
+      }
+    }
+  }, [blog?.id, mode]);
+
+  // Handle successful upload
+  useEffect(() => {
+    if (dropzoneProps.isSuccess && dropzoneProps.files.length > 0) {
+      const uploadedFile = dropzoneProps.files[0];
+      // The file gets uploaded with the original name in the user's folder
+      const imagePath = `${userId || "anonymous"}/${uploadedFile.name}`;
+      setFormData((prev) => ({
+        ...prev,
+        image_path: imagePath,
+        image: "", // Clear any previous URL since we're using storage now
+      }));
+      toast.success("Image uploaded successfully!");
+
+      // Clear the dropzone files after successful upload and form update
+      setTimeout(() => {
+        dropzoneProps.setFiles([]);
+      }, 1000);
+    }
+  }, [dropzoneProps.isSuccess, dropzoneProps.files, userId]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -149,31 +201,85 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
               )}
             </div>
 
-            {/* Cover Image */}
+            {/* Cover Image Upload */}
             <div className="space-y-2">
-              <Label htmlFor="image">Cover Image URL</Label>
-              <Input
-                id="image"
-                type="url"
-                value={formData.image}
-                onChange={(e) =>
-                  setFormData({ ...formData, image: e.target.value })
-                }
-                placeholder="Enter image URL (optional)"
-              />
-              {formData.image && (
-                <div className="mt-2 relative max-w-xs h-32">
-                  <Image
-                    src={formData.image}
-                    alt="Cover preview"
-                    fill
-                    className="object-cover rounded border"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
-                </div>
-              )}
+              <Label>Cover Image</Label>
+
+              {/* Show current image if it exists and no new upload in progress */}
+              {(formData.image || formData.image_path) &&
+                dropzoneProps.files.length === 0 && (
+                  <div className="mb-3">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Current image:
+                    </p>
+                    <div className="relative max-w-xs h-32 border rounded">
+                      <Image
+                        src={
+                          formData.image ||
+                          getBlogImageUrl(formData.image_path) ||
+                          ""
+                        }
+                        alt="Cover preview"
+                        fill
+                        className="object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          image: "",
+                          image_path: "",
+                        }));
+                        dropzoneProps.setFiles([]);
+                        toast.success("Image removed");
+                      }}
+                      className="mt-2"
+                    >
+                      Remove Image
+                    </Button>
+                  </div>
+                )}
+
+              {/* Dropzone - always show but with conditional text */}
+              <Dropzone {...dropzoneProps} className="min-h-[120px]">
+                {/* Custom empty state for blog images */}
+                {dropzoneProps.files.length === 0 &&
+                  !dropzoneProps.isSuccess && (
+                    <div className="flex flex-col items-center gap-y-2">
+                      <Upload size={20} className="text-muted-foreground" />
+                      <p className="text-sm">
+                        {formData.image || formData.image_path
+                          ? "Replace cover image"
+                          : "Upload cover image"}
+                      </p>
+                      <div className="flex flex-col items-center gap-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          Drag and drop or{" "}
+                          <a
+                            onClick={() =>
+                              dropzoneProps.inputRef.current?.click()
+                            }
+                            className="underline cursor-pointer transition hover:text-foreground"
+                          >
+                            select file
+                          </a>{" "}
+                          to upload
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Maximum file size: 5 MB
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                <DropzoneContent />
+              </Dropzone>
             </div>
           </CardContent>
         </Card>
