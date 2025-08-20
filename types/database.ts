@@ -39,6 +39,53 @@ export interface Database {
           }
         ];
       };
+      blogs: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          subtitle: string | null;
+          image: string | null;
+          content: string;
+          author: string;
+          user_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug?: string;
+          subtitle?: string | null;
+          image?: string | null;
+          content: string;
+          author: string;
+          user_id: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          subtitle?: string | null;
+          image?: string | null;
+          content?: string;
+          author?: string;
+          user_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blogs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

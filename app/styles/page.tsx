@@ -10,11 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 
 export default function StylesPage() {
-  const [darkMode, setDarkMode] = useState(false);
-
   // Color tokens from globals.css
   const colorTokens = {
     semantic: [
@@ -267,7 +264,9 @@ export default function StylesPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-mono text-lg">const hello = "world";</p>
+                  <p className="font-mono text-lg">
+                    const hello = &quot;world&quot;;
+                  </p>
                   <code className="text-sm bg-muted px-2 py-1 rounded mt-2 block">
                     font-family: var(--font-geist-mono)
                   </code>
