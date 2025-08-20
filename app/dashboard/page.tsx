@@ -1,87 +1,133 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { BlogPostCard } from "@/components/blog-post-card";
+"use client";
 
-import { Plus, TrendingUp, Users, FileText, Eye } from "lucide-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-
-// Mock data for blog posts
-const mockBlogPosts = [
-  {
-    id: "1",
-    title: "Getting Started with Next.js 15: A Complete Guide",
-    excerpt:
-      "Learn how to build modern web applications with Next.js 15, including the latest features like Server Components, streaming, and more.",
-    category: "Technology",
-    publishedAt: "2024-01-15",
-    readTime: 8,
-    views: 1234,
-    comments: 23,
-    status: "published" as const,
-    imageUrl: "/images/hero-background.jpg",
-  },
-  {
-    id: "2",
-    title: "The Future of Web Development in 2024",
-    excerpt:
-      "Exploring the trends and technologies that will shape web development this year, from AI integration to performance optimizations.",
-    category: "Web Development",
-    publishedAt: "2024-01-12",
-    readTime: 12,
-    views: 2156,
-    comments: 45,
-    status: "published" as const,
-  },
-  {
-    id: "3",
-    title: "Building Scalable React Applications",
-    excerpt:
-      "Best practices for structuring large React applications, including component architecture, state management, and performance optimization.",
-    category: "React",
-    publishedAt: "2024-01-10",
-    readTime: 15,
-    views: 987,
-    comments: 18,
-    status: "draft" as const,
-    imageUrl: "/images/hero-background.jpg",
-  },
-  {
-    id: "4",
-    title: "Understanding TypeScript Generics",
-    excerpt:
-      "A deep dive into TypeScript generics, how they work, and practical examples to improve your code's type safety and reusability.",
-    category: "TypeScript",
-    publishedAt: "2024-01-20",
-    readTime: 10,
-    views: 0,
-    comments: 0,
-    status: "scheduled" as const,
-  },
-];
-
-// Mock analytics data
-const analyticsData = {
-  totalViews: 15678,
-  totalPosts: 24,
-  totalSubscribers: 1234,
-  engagement: 78,
-};
+import { Button } from "@/components/ui/button";
+import { BlogPostCard } from "@/components/blog-post-card";
+import { getUserBlogs } from "@/lib/actions/blog";
+import { getBlogImageUrl } from "@/lib/utils/image-utils";
+import { BlogListItem } from "@/types/blog";
+import { Plus } from "lucide-react";
 
 export default function DashboardHome() {
+  const [blogs, setBlogs] = useState<BlogListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Function to load blogs
+  const loadBlogs = async () => {
+    try {
+      setIsLoading(true);
+      const fetchedBlogs = await getUserBlogs();
+      setBlogs(fetchedBlogs);
+    } catch (error) {
+      console.error("Failed to load blogs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load blogs on component mount
+  useEffect(() => {
+    loadBlogs();
+  }, []);
+
+  // Function to handle blog deletion
+  const handleBlogDelete = () => {
+    // Refresh the blogs list after deletion
+    loadBlogs();
+  };
+
+  // Map blog data to BlogPostCard format
+  const blogCardData = blogs.map((blog) => ({
+    id: blog.id,
+    title: blog.title,
+    excerpt:
+      blog.subtitle || "Learn the fundamentals of modern web development",
+    category: "Design", // Default category for now
+    publishedAt: blog.created_at,
+    readTime: 1, // Default read time since we don't have content in the list
+    views: 0, // Default views
+    comments: 0, // Default comments
+    status: "published" as const,
+    imageUrl: blog.image || getBlogImageUrl(blog.image_path) || undefined,
+    authorName: blog.author,
+    slug: blog.slug,
+    showDelete: true,
+    onDelete: handleBlogDelete,
+  }));
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">My Blog Posts</h1>
+            <p className="text-muted-foreground">
+              Manage and organize your blog content.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/dashboard/blogs/new">
+              <Plus className="mr-2 h-4 w-4" />
+              New Post
+            </Link>
+          </Button>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Loading blogs...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (blogs.length === 0) {
+    return (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">My Blog Posts</h1>
+            <p className="text-muted-foreground">
+              Manage and organize your blog content.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/dashboard/blogs/new">
+              <Plus className="mr-2 h-4 w-4" />
+              New Post
+            </Link>
+          </Button>
+        </div>
+
+        {/* Empty State */}
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No blog posts yet
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Get started by creating your first blog post.
+            </p>
+            <Link href="/dashboard/blogs/new">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Blog
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-8">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">My Blog Posts</h1>
           <p className="text-muted-foreground">
-            Welcome back! Here&apos;s what&apos;s happening with your blog.
+            Manage and organize your blog content.
           </p>
         </div>
         <Button asChild>
@@ -92,135 +138,12 @@ export default function DashboardHome() {
         </Button>
       </div>
 
-      {/* Analytics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analyticsData.totalViews.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+12.5%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analyticsData.totalPosts}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+3</span> new this month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Subscribers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analyticsData.totalSubscribers.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+8.2%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analyticsData.engagement}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+2.3%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
+      {/* Blog Cards Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {blogCardData.map((blog) => (
+          <BlogPostCard key={blog.id} {...blog} />
+        ))}
       </div>
-
-      {/* Recent Posts */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Recent Posts
-          </h2>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard/blogs">View All</Link>
-          </Button>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {mockBlogPosts.slice(0, 3).map((post) => (
-            <BlogPostCard key={post.id} {...post} />
-          ))}
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Common tasks to manage your blog effectively.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Button variant="outline" className="h-auto flex-col p-4" asChild>
-            <Link href="/dashboard/blogs/new">
-              <Plus className="mb-2 h-6 w-6" />
-              <span className="font-medium">Create Post</span>
-              <span className="text-xs text-muted-foreground mt-1">
-                Start writing
-              </span>
-            </Link>
-          </Button>
-
-          <Button variant="outline" className="h-auto flex-col p-4" asChild>
-            <Link href="/dashboard/blogs?filter=draft">
-              <FileText className="mb-2 h-6 w-6" />
-              <span className="font-medium">Draft Posts</span>
-              <span className="text-xs text-muted-foreground mt-1">
-                3 pending
-              </span>
-            </Link>
-          </Button>
-
-          <Button variant="outline" className="h-auto flex-col p-4" asChild>
-            <Link href="/dashboard/settings">
-              <TrendingUp className="mb-2 h-6 w-6" />
-              <span className="font-medium">Analytics</span>
-              <span className="text-xs text-muted-foreground mt-1">
-                View insights
-              </span>
-            </Link>
-          </Button>
-
-          <Button variant="outline" className="h-auto flex-col p-4" asChild>
-            <Link href="/dashboard/account">
-              <Users className="mb-2 h-6 w-6" />
-              <span className="font-medium">Profile</span>
-              <span className="text-xs text-muted-foreground mt-1">
-                Edit details
-              </span>
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }

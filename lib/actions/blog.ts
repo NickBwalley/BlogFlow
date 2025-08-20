@@ -38,6 +38,7 @@ export async function createBlog(formData: BlogFormData) {
   }
 
   revalidatePath("/dashboard/blogs");
+  revalidatePath("/dashboard");
   return data;
 }
 
@@ -82,6 +83,7 @@ export async function updateBlog(id: string, formData: BlogFormData) {
   }
 
   revalidatePath("/dashboard/blogs");
+  revalidatePath("/dashboard");
   revalidatePath(`/dashboard/blogs/${id}`);
   return data;
 }
@@ -110,6 +112,7 @@ export async function deleteBlog(id: string) {
   }
 
   revalidatePath("/dashboard/blogs");
+  revalidatePath("/dashboard");
   // Don't redirect here - let the component handle the navigation
 }
 
@@ -132,17 +135,27 @@ export async function getBlog(id: string) {
 export async function getBlogBySlug(slug: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("blogs")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("blogs")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
 
-  if (error) {
-    throw new Error(`Failed to fetch blog: ${error.message}`);
+    if (error) {
+      console.error("Supabase error in getBlogBySlug:", error);
+      throw new Error(`Failed to fetch blog: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error(`Blog with slug "${slug}" not found`);
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Error in getBlogBySlug:", err);
+    throw err;
   }
-
-  return data;
 }
 
 export async function getBlogs(userId?: string) {
@@ -150,7 +163,9 @@ export async function getBlogs(userId?: string) {
 
   let query = supabase
     .from("blogs")
-    .select("id, title, slug, subtitle, image, author, created_at, updated_at")
+    .select(
+      "id, title, slug, subtitle, image, image_path, author, created_at, updated_at"
+    )
     .order("created_at", { ascending: false });
 
   if (userId) {

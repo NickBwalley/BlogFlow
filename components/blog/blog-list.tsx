@@ -74,9 +74,9 @@ export function BlogList({ blogs, showUserBlogs = false }: BlogListProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {blogs.map((blog) => (
-        <Card key={blog.id} className="flex flex-col">
+        <Card key={blog.id} className="flex flex-col overflow-hidden p-0">
           {blog.image && (
-            <div className="aspect-video overflow-hidden rounded-t-lg relative">
+            <div className="aspect-video overflow-hidden relative">
               <Image
                 src={blog.image}
                 alt={blog.title}
@@ -86,7 +86,7 @@ export function BlogList({ blogs, showUserBlogs = false }: BlogListProps) {
             </div>
           )}
 
-          <CardHeader className="flex-1">
+          <CardHeader className="flex-1 p-6">
             <CardTitle className="line-clamp-2">{blog.title}</CardTitle>
             {blog.subtitle && (
               <p className="text-sm text-gray-600 line-clamp-2">
@@ -95,7 +95,7 @@ export function BlogList({ blogs, showUserBlogs = false }: BlogListProps) {
             )}
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="px-6">
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>by {blog.author}</span>
               <time dateTime={blog.created_at}>
@@ -104,8 +104,8 @@ export function BlogList({ blogs, showUserBlogs = false }: BlogListProps) {
             </div>
           </CardContent>
 
-          <CardFooter className="flex gap-2">
-            <Link href={`/blogs/${blog.slug}`} className="flex-1">
+          <CardFooter className="flex gap-2 p-6 pt-0">
+            <Link href={`/blogs/${blog.slug || blog.id}`} className="flex-1">
               <Button variant="outline" size="sm" className="w-full">
                 <Eye className="h-4 w-4 mr-2" />
                 View

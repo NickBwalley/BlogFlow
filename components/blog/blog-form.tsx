@@ -115,7 +115,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
         if (mode === "create") {
           const newBlog = await createBlog(formData);
           toast.success("Blog post created successfully!");
-          router.push(`/dashboard/blogs/${newBlog.id}`);
+          router.push(`/dashboard`);
         } else if (blog) {
           await updateBlog(blog.id, formData);
           toast.success("Blog post updated successfully!");
@@ -136,7 +136,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/blogs">
+        <Link href="/dashboard">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Blogs
@@ -318,7 +318,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
 
         {/* Actions */}
         <div className="flex justify-end gap-4">
-          <Link href="/dashboard/blogs">
+          <Link href="/dashboard">
             <Button type="button" variant="outline" disabled={isPending}>
               Cancel
             </Button>

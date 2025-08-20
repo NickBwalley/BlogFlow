@@ -3,8 +3,9 @@
 import { Blog } from "@/types/blog";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { formatDate } from "@/lib/utils";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -12,12 +13,16 @@ interface BlogDetailProps {
   blog: Blog;
   showBackButton?: boolean;
   backUrl?: string;
+  category?: string;
+  readTime?: number;
 }
 
 export function BlogDetail({
   blog,
   showBackButton = true,
   backUrl = "/blogs",
+  category = "Design",
+  readTime = 1,
 }: BlogDetailProps) {
   return (
     <article className="max-w-4xl mx-auto">
@@ -44,6 +49,17 @@ export function BlogDetail({
             />
           </div>
         )}
+
+        {/* Category Badge and Read Time */}
+        <div className="flex items-center justify-between mb-6">
+          <Badge variant="secondary" className="text-xs font-medium">
+            {category}
+          </Badge>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            {readTime} min read
+          </div>
+        </div>
 
         <h1 className="text-4xl font-bold text-gray-900 mb-4">{blog.title}</h1>
 

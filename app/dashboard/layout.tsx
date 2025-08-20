@@ -35,13 +35,8 @@ import type { User } from "@supabase/supabase-js";
 
 const sidebarNavItems = [
   {
-    title: "Home",
-    href: "/dashboard",
-    icon: Home,
-  },
-  {
     title: "Blogs",
-    href: "/dashboard/blogs",
+    href: "/dashboard",
     icon: FileText,
   },
   {

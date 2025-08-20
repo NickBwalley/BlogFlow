@@ -19,6 +19,7 @@ export interface BlogListItem {
   slug: string;
   subtitle: string | null;
   image: string | null;
+  image_path: string | null;
   author: string;
   created_at: string;
   updated_at: string;

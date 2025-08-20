@@ -1,15 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardFooter, CardHeader } from "@/components/ui/card";
-import {
-  Calendar,
-  Clock,
-  Eye,
-  MessageCircle,
-  MoreHorizontal,
-} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Clock, Eye, Edit, Trash2 } from "lucide-react";
+import { deleteBlog } from "@/lib/actions/blog";
+import { toast } from "sonner";
+import { useTransition, useState } from "react";
 
 interface BlogPostCardProps {
   id: string;
@@ -22,6 +22,11 @@ interface BlogPostCardProps {
   comments: number;
   status: "published" | "draft" | "scheduled";
   imageUrl?: string;
+  authorName?: string;
+  authorAvatar?: string;
+  slug?: string;
+  showDelete?: boolean;
+  onDelete?: () => void;
 }
 
 export function BlogPostCard({
@@ -35,101 +40,127 @@ export function BlogPostCard({
   comments,
   status,
   imageUrl,
+  authorName = "John Doe",
+  authorAvatar,
+  slug,
+  showDelete = false,
+  onDelete,
 }: BlogPostCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "published":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "draft":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-      case "scheduled":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-    }
-  };
+  const [isPending, startTransition] = useTransition();
+  const [isDeleting, setIsDeleting] = useState(false);
 
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this blog post?")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    startTransition(async () => {
+      try {
+        await deleteBlog(id);
+        toast.success("Blog post deleted successfully!");
+        if (onDelete) {
+          onDelete();
+        }
+      } catch (error) {
+        console.error("Failed to delete blog:", error);
+        toast.error("Failed to delete blog post");
+      } finally {
+        setIsDeleting(false);
+      }
+    });
+  };
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-300">
-      <CardHeader className="space-y-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
-              {category}
-            </Badge>
-            <Badge className={`text-xs capitalize ${getStatusColor(status)}`}>
-              {status}
-            </Badge>
+    <Card className="group hover:shadow-lg transition-shadow duration-300 overflow-hidden p-0">
+      {/* Hero Image */}
+      {imageUrl && (
+        <div className="aspect-video w-full overflow-hidden bg-muted">
+          <Image
+            src={imageUrl}
+            alt={title}
+            width={400}
+            height={225}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+      )}
+
+      <CardContent className="p-6 space-y-4">
+        {/* Category Badge and Read Time */}
+        <div className="flex items-center justify-between">
+          <Badge variant="secondary" className="text-xs font-medium">
+            {category}
+          </Badge>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            {readTime} min read
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
         </div>
 
-        {imageUrl && (
-          <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-            <Image
-              src={imageUrl}
-              alt={title}
-              width={400}
-              height={225}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-          </div>
-        )}
-
-        <div>
-          <h3 className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
-            <Link href={`/dashboard/blogs/${id}`}>{title}</Link>
+        {/* Title and Excerpt */}
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold line-clamp-2 group-hover:text-primary transition-colors">
+            <Link href={`/blogs/${slug || id}`}>{title}</Link>
           </h3>
-          <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
+          <p className="text-muted-foreground line-clamp-2 leading-relaxed">
             {excerpt}
           </p>
         </div>
-      </CardHeader>
 
-      <CardFooter className="pt-0">
-        <div className="w-full space-y-3">
-          <div className="flex items-center text-xs text-muted-foreground gap-4">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {new Date(publishedAt).toLocaleDateString()}
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {readTime} min read
+        {/* Author and Date */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8">
+              {authorAvatar ? (
+                <AvatarImage src={authorAvatar} alt={authorName} />
+              ) : (
+                <AvatarFallback className="bg-red-500 text-white text-xs">
+                  {authorName
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase() || "JD"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{authorName}</span>
+              <span className="text-xs text-muted-foreground">
+                {new Date(publishedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-xs text-muted-foreground gap-3">
-              <div className="flex items-center gap-1">
-                <Eye className="h-3 w-3" />
-                {views.toLocaleString()}
-              </div>
-              <div className="flex items-center gap-1">
-                <MessageCircle className="h-3 w-3" />
-                {comments}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={`/dashboard/blogs/${id}/edit`}>Edit</Link>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <Link href={`/blogs/${slug || id}`} target="_blank">
+                <Eye className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <Link href={`/dashboard/blogs/${id}/edit`}>
+                <Edit className="h-4 w-4" />
+              </Link>
+            </Button>
+            {showDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                onClick={handleDelete}
+                disabled={isPending || isDeleting}
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/blog/${id}`} target="_blank">
-                  View
-                </Link>
-              </Button>
-            </div>
+            )}
           </div>
         </div>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 }
