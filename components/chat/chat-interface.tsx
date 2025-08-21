@@ -17,38 +17,22 @@ interface ChatInterfaceProps {
   initialMessages?: MessageType[];
 }
 
-export function ChatInterface({ chatId, initialMessages = [] }: ChatInterfaceProps) {
+export function ChatInterface({
+  chatId,
+  initialMessages = [],
+}: ChatInterfaceProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
+  const [isPending, setIsPending] = useState(false);
 
-  // Convert initial messages to AI SDK format
-  const convertedMessages = initialMessages.map((msg) => ({
-    id: msg.id,
-    role: msg.role as "user" | "assistant",
-    parts: [{ type: "text" as const, text: msg.content }],
-  }));
-
-  const { messages, sendMessage, isLoading } = useChat({
-    api: "/api/chat",
-    initialMessages: convertedMessages,
-    onFinish: async (message) => {
-      // Save assistant message to database
-      if (chatId && message.role === "assistant") {
-        await saveMessage({
-          chat_id: chatId,
-          role: "assistant",
-          content: message.parts.map(part => 
-            part.type === "text" ? part.text : ""
-          ).join(""),
-        });
-      }
-    },
-  });
+  const { messages, sendMessage } = useChat();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]");
+      const scrollElement = scrollAreaRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      );
       if (scrollElement) {
         scrollElement.scrollTop = scrollElement.scrollHeight;
       }
@@ -57,22 +41,28 @@ export function ChatInterface({ chatId, initialMessages = [] }: ChatInterfacePro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isPending) return;
 
     const userMessage = input.trim();
     setInput("");
+    setIsPending(true);
 
-    // Save user message to database if we have a chatId
-    if (chatId) {
-      await saveMessage({
-        chat_id: chatId,
-        role: "user",
-        content: userMessage,
-      });
+    try {
+      // Save user message to database if we have a chatId
+      if (chatId) {
+        await saveMessage({
+          chat_id: chatId,
+          role: "user",
+          content: userMessage,
+        });
+      }
+
+      // Send message to AI (this will handle the loading state)
+      sendMessage({ text: userMessage });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setIsPending(false);
     }
-
-    // Send message to AI
-    sendMessage({ text: userMessage });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -92,10 +82,12 @@ export function ChatInterface({ chatId, initialMessages = [] }: ChatInterfacePro
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Bot className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Start a conversation</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Start a conversation
+              </h3>
               <p className="text-muted-foreground max-w-md">
-                Ask me anything! I'm here to help you with questions, creative writing, 
-                analysis, coding, and much more.
+                Ask me anything! I&apos;m here to help you with questions,
+                creative writing, analysis, coding, and much more.
               </p>
             </div>
           ) : (
@@ -113,7 +105,7 @@ export function ChatInterface({ chatId, initialMessages = [] }: ChatInterfacePro
                     </AvatarFallback>
                   </Avatar>
                 )}
-                
+
                 <div
                   className={`max-w-[70%] rounded-lg px-4 py-3 ${
                     message.role === "user"
@@ -128,7 +120,10 @@ export function ChatInterface({ chatId, initialMessages = [] }: ChatInterfacePro
                           {part.text}
                         </p>
                       ) : (
-                        <div key={i} className="prose prose-sm max-w-none dark:prose-invert">
+                        <div
+                          key={i}
+                          className="prose prose-sm max-w-none dark:prose-invert"
+                        >
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {part.text}
                           </ReactMarkdown>
@@ -149,8 +144,8 @@ export function ChatInterface({ chatId, initialMessages = [] }: ChatInterfacePro
               </div>
             ))
           )}
-          
-          {isLoading && (
+
+          {isPending && (
             <div className="flex gap-3 justify-start">
               <Avatar className="w-8 h-8 mt-1">
                 <AvatarFallback>
@@ -179,13 +174,13 @@ export function ChatInterface({ chatId, initialMessages = [] }: ChatInterfacePro
               onKeyDown={handleKeyDown}
               placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)"
               className="min-h-[60px] max-h-32 resize-none"
-              disabled={isLoading}
+              disabled={isPending}
             />
-            <Button 
-              type="submit" 
-              size="icon" 
+            <Button
+              type="submit"
+              size="icon"
               className="h-[60px] w-[60px]"
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isPending}
             >
               <Send className="h-4 w-4" />
             </Button>

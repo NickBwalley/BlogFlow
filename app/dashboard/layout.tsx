@@ -24,7 +24,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
-  Home,
   FileText,
   Settings,
   User as UserIcon,

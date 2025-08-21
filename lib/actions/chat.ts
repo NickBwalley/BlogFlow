@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/server";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import type { Chat, Message, CreateChatData, CreateMessageData } from "@/types";
 
 export async function createChat(data: { title?: string }) {
@@ -130,7 +129,9 @@ export async function getChatWithMessages(chatId: string) {
 
     return {
       success: true,
-      data: { ...chat, messages: messages || [] } as Chat & { messages: Message[] },
+      data: { ...chat, messages: messages || [] } as Chat & {
+        messages: Message[];
+      },
     };
   } catch (error) {
     console.error("Error fetching chat with messages:", error);

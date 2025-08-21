@@ -13,11 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
-import {
-  Dropzone,
-  DropzoneContent,
-  DropzoneEmptyState,
-} from "@/components/dropzone";
+import { Dropzone, DropzoneContent } from "@/components/dropzone";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getBlogImageUrl } from "@/lib/utils/image-utils";
@@ -142,7 +138,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
         };
 
         if (mode === "create") {
-          const newBlog = await createBlog(blogData);
+          await createBlog(blogData);
           toast.success("Blog post created successfully!");
           router.push(`/dashboard`);
         } else if (blog) {

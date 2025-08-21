@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -116,7 +115,7 @@ export function BlogCreationModal({
             <DialogHeader>
               <DialogTitle>Create New Blog Post</DialogTitle>
               <DialogDescription>
-                Choose how you'd like to create your blog post
+                Choose how you&apos;d like to create your blog post
               </DialogDescription>
             </DialogHeader>
 

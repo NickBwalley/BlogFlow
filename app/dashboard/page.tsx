@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { BlogPostCard } from "@/components/blog-post-card";
 import { BlogCreationModal } from "@/components/blog/blog-creation-modal";
 import { getUserBlogs } from "@/lib/actions/blog";
-import { getBlogImageUrl } from "@/lib/utils/image-utils";
 import { getBlogImageWithDefault } from "@/lib/utils/default-image";
 import { BlogListItem } from "@/types/blog";
 import { Plus } from "lucide-react";

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { getChatWithMessages } from "@/lib/actions/chat";
-import type { Chat, Message } from "@/types";
+import type { Message } from "@/types";
 
 export default function ChatIdPage() {
   const params = useParams();

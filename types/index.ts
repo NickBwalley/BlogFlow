@@ -10,6 +10,15 @@ export type {
   UpdateProfileData,
 } from "./profile";
 
+// Blog types
+export type {
+  Blog,
+  BlogInsert,
+  BlogUpdate,
+  BlogFormData,
+  BlogListItem,
+} from "./blog";
+
 // Chat types
 export type {
   Chat,
@@ -18,3 +27,6 @@ export type {
   CreateMessageData,
   ChatWithMessages,
 } from "./chat";
+
+// Email types
+export type { WelcomeEmailProps } from "./email";

@@ -455,8 +455,8 @@ export default function BlogsPage() {
                         No articles yet
                       </h3>
                       <p className="text-muted-foreground mb-8">
-                        We're working on creating amazing content for you. Check
-                        back soon!
+                        We&apos;re working on creating amazing content for you.
+                        Check back soon!
                       </p>
                     </div>
                   </div>

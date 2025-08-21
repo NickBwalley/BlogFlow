@@ -61,6 +61,7 @@ export async function POST(req: Request) {
     const { object: blogPost } = await generateObject({
       model: openai("gpt-4o"),
       schema: BlogPostSchema,
+      temperature: 0.7,
       prompt: `Create a comprehensive, engaging blog post based on this description: "${description}"
 
 Requirements:
@@ -80,8 +81,6 @@ Structure the content with:
 4. A strong conclusion
 
 Format the content in markdown with proper headings (##, ###), bullet points, and emphasis where appropriate.`,
-      maxTokens: 4000,
-      temperature: 0.7,
     });
 
     // Generate a unique slug from the title

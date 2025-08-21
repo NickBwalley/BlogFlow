@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { getChatWithMessages } from "@/lib/actions/chat";
-import type { Chat, Message } from "@/types";
+import type { Message } from "@/types";
 
 export default function ChatPage() {
   const [selectedChatId, setSelectedChatId] = useState<string | undefined>();

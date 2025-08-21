@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Clock, Eye } from "lucide-react";
 import { BlogListItem } from "@/types/blog";
 import { getBlogImageUrl } from "@/lib/utils/image-utils";
