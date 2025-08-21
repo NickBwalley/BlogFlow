@@ -10,6 +10,7 @@ import { Clock, Eye, Edit, Trash2 } from "lucide-react";
 import { deleteBlog } from "@/lib/actions/blog";
 import { toast } from "sonner";
 import { useTransition, useState } from "react";
+import { getReadTime } from "@/lib/utils/read-time";
 
 interface BlogPostCardProps {
   id: string;
@@ -17,7 +18,7 @@ interface BlogPostCardProps {
   excerpt: string;
   category: string;
   publishedAt: string;
-  readTime: number;
+  readTime?: number;
   views: number;
   comments: number;
   status: "published" | "draft" | "scheduled";
@@ -27,6 +28,7 @@ interface BlogPostCardProps {
   slug?: string;
   showDelete?: boolean;
   onDelete?: () => void;
+  content?: string; // Add content for dynamic read time calculation
 }
 
 export function BlogPostCard({
@@ -45,9 +47,13 @@ export function BlogPostCard({
   slug,
   showDelete = false,
   onDelete,
+  content,
 }: BlogPostCardProps) {
   const [isPending, startTransition] = useTransition();
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Calculate dynamic read time
+  const dynamicReadTime = readTime || getReadTime(content, 1);
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this blog post?")) {
@@ -93,7 +99,7 @@ export function BlogPostCard({
           </Badge>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
-            {readTime} min read
+            {dynamicReadTime} min read
           </div>
         </div>
 

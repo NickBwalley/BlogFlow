@@ -164,7 +164,7 @@ export async function getBlogs(userId?: string) {
   let query = supabase
     .from("blogs")
     .select(
-      "id, title, slug, subtitle, image, image_path, author, created_at, updated_at"
+      "id, title, slug, subtitle, image, image_path, author, created_at, updated_at, content"
     )
     .order("created_at", { ascending: false });
 

@@ -23,4 +23,5 @@ export interface BlogListItem {
   author: string;
   created_at: string;
   updated_at: string;
+  content: string;
 }

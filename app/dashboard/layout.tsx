@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/protected-route";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Header } from "@/components/header";
 import {
   Sidebar,
   SidebarContent,
@@ -28,6 +29,7 @@ import {
   Settings,
   User as UserIcon,
   LogOut,
+  Star,
 } from "lucide-react";
 import { createClient } from "@/lib/client";
 import { toast } from "sonner";
@@ -35,9 +37,14 @@ import type { User } from "@supabase/supabase-js";
 
 const sidebarNavItems = [
   {
-    title: "Blogs",
+    title: "My Blogs",
     href: "/dashboard",
     icon: FileText,
+  },
+  {
+    title: "Featured Blogs",
+    href: "/blogs",
+    icon: Star,
   },
   {
     title: "Settings",
@@ -118,108 +125,113 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <ProtectedRoute>
-      <SidebarProvider>
-        <Sidebar collapsible="icon">
-          <SidebarHeader>
-            <div className="flex items-center gap-3 px-4 py-2">
-              <div className="relative h-8 w-8">
-                <Image
-                  src="/images/favicon.png"
-                  alt="BlogFlow Logo"
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 rounded-md"
-                />
-              </div>
-              <h1 className="text-xl font-semibold group-data-[collapsible=icon]:hidden">
-                BlogFlow
-              </h1>
-            </div>
-          </SidebarHeader>
-
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {sidebarNavItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = pathname === item.href;
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton asChild isActive={isActive}>
-                          <Link href={item.href}>
-                            <Icon />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-
-          <SidebarFooter>
-            <div className="p-2">
-              <Separator className="mb-2" />
-
-              {/* User Profile */}
-              {isLoading ? (
-                <div className="flex items-center gap-3 px-2 py-2 group-data-[collapsible=icon]:justify-center">
-                  <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-                  <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <div className="h-4 bg-muted rounded animate-pulse mb-1" />
-                    <div className="h-3 bg-muted rounded animate-pulse w-3/4" />
+      <div className="min-h-screen">
+        <Header variant="light" />
+        <div className="pt-20">
+          <SidebarProvider>
+            <Sidebar collapsible="icon">
+              <SidebarHeader>
+                <div className="flex items-center gap-3 px-4 py-2">
+                  <div className="relative h-8 w-8">
+                    <Image
+                      src="/images/favicon.png"
+                      alt="BlogFlow Logo"
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-md"
+                    />
                   </div>
+                  <h1 className="text-xl font-semibold group-data-[collapsible=icon]:hidden">
+                    BlogFlow
+                  </h1>
                 </div>
-              ) : user ? (
-                <div className="flex items-center gap-3 px-2 py-2 group-data-[collapsible=icon]:justify-center">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback>
-                      {getUserInitials(user.email)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm font-medium truncate">
-                      {user.user_metadata?.full_name ||
-                        getDisplayName(user.email)}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
-                  </div>
+              </SidebarHeader>
+
+              <SidebarContent>
+                <SidebarGroup>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {sidebarNavItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href;
+                        return (
+                          <SidebarMenuItem key={item.href}>
+                            <SidebarMenuButton asChild isActive={isActive}>
+                              <Link href={item.href}>
+                                <Icon />
+                                <span>{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              </SidebarContent>
+
+              <SidebarFooter>
+                <div className="p-2">
+                  <Separator className="mb-2" />
+
+                  {/* User Profile */}
+                  {isLoading ? (
+                    <div className="flex items-center gap-3 px-2 py-2 group-data-[collapsible=icon]:justify-center">
+                      <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                      <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                        <div className="h-4 bg-muted rounded animate-pulse mb-1" />
+                        <div className="h-3 bg-muted rounded animate-pulse w-3/4" />
+                      </div>
+                    </div>
+                  ) : user ? (
+                    <div className="flex items-center gap-3 px-2 py-2 group-data-[collapsible=icon]:justify-center">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.user_metadata?.avatar_url} />
+                        <AvatarFallback>
+                          {getUserInitials(user.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                        <p className="text-sm font-medium truncate">
+                          {user.user_metadata?.full_name ||
+                            getDisplayName(user.email)}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start mt-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
+                    onClick={handleSignOut}
+                    disabled={isLoading}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="group-data-[collapsible=icon]:hidden ml-2">
+                      Sign out
+                    </span>
+                  </Button>
                 </div>
-              ) : null}
+              </SidebarFooter>
+            </Sidebar>
 
-              <Button
-                variant="ghost"
-                className="w-full justify-start mt-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
-                onClick={handleSignOut}
-                disabled={isLoading}
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="group-data-[collapsible=icon]:hidden ml-2">
-                  Sign out
-                </span>
-              </Button>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
+            <SidebarInset>
+              {/* Header with Sidebar Toggle */}
+              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                <div className="flex-1" />
+              </header>
 
-        <SidebarInset>
-          {/* Header with Sidebar Toggle */}
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <div className="flex-1" />
-          </header>
-
-          {/* Main Content */}
-          <main className="flex-1 space-y-4 p-6">{children}</main>
-        </SidebarInset>
-      </SidebarProvider>
+              {/* Main Content */}
+              <main className="flex-1 space-y-4 p-6">{children}</main>
+            </SidebarInset>
+          </SidebarProvider>
+        </div>
+      </div>
     </ProtectedRoute>
   );
 }

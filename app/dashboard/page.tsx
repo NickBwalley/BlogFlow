@@ -45,7 +45,6 @@ export default function DashboardHome() {
       blog.subtitle || "Learn the fundamentals of modern web development",
     category: "Design", // Default category for now
     publishedAt: blog.created_at,
-    readTime: 1, // Default read time since we don't have content in the list
     views: 0, // Default views
     comments: 0, // Default comments
     status: "published" as const,
@@ -54,6 +53,7 @@ export default function DashboardHome() {
     slug: blog.slug,
     showDelete: true,
     onDelete: handleBlogDelete,
+    content: blog.content, // Pass content for dynamic read time calculation
   }));
 
   if (isLoading) {

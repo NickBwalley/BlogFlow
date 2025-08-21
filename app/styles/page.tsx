@@ -1,5 +1,6 @@
 "use client";
 
+import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -133,425 +134,429 @@ export default function StylesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-8 space-y-12">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">
-            BlogFlow Design System
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            A comprehensive guide to the colors, typography, spacing, and
-            components that make up our design language.
-          </p>
-        </div>
-
-        {/* Color Palette */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold">Color Palette</h2>
-          <p className="text-muted-foreground">
-            Our color system uses OKLCH format for consistent and accessible
-            colors across light and dark themes.
-          </p>
-
-          {/* Semantic Colors */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">Semantic Colors</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {colorTokens.semantic.map((color) => (
-                <Card key={color.name} className="overflow-hidden">
-                  <div
-                    className="h-20 border-b"
-                    style={{ backgroundColor: `hsl(var(${color.cssVar}))` }}
-                  />
-                  <CardContent className="pt-4 space-y-2">
-                    <h4 className="font-medium">{color.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {color.description}
-                    </p>
-                    <code className="text-xs bg-muted px-2 py-1 rounded">
-                      {color.cssVar}
-                    </code>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+    <>
+      <Header variant="light" />
+      <div className="min-h-screen bg-background pt-20">
+        <div className="container mx-auto p-8 space-y-12">
+          {/* Header */}
+          <div className="text-center space-y-4">
+            <h1 className="text-4xl font-bold tracking-tight">
+              BlogFlow Design System
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              A comprehensive guide to the colors, typography, spacing, and
+              components that make up our design language.
+            </p>
           </div>
 
-          {/* UI Colors */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">UI Colors</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {colorTokens.ui.map((color) => (
-                <Card key={color.name} className="overflow-hidden">
-                  <div
-                    className="h-20 border-b"
-                    style={{ backgroundColor: `hsl(var(${color.cssVar}))` }}
-                  />
-                  <CardContent className="pt-4 space-y-2">
-                    <h4 className="font-medium">{color.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {color.description}
-                    </p>
-                    <code className="text-xs bg-muted px-2 py-1 rounded">
-                      {color.cssVar}
-                    </code>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          {/* Color Palette */}
+          <section className="space-y-6">
+            <h2 className="text-3xl font-semibold">Color Palette</h2>
+            <p className="text-muted-foreground">
+              Our color system uses OKLCH format for consistent and accessible
+              colors across light and dark themes.
+            </p>
 
-          {/* Chart Colors */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">Chart Colors</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {colorTokens.chart.map((color) => (
-                <Card key={color.name} className="overflow-hidden">
-                  <div
-                    className="h-20 border-b"
-                    style={{ backgroundColor: `hsl(var(${color.cssVar}))` }}
-                  />
-                  <CardContent className="pt-4 space-y-2">
-                    <h4 className="font-medium">{color.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {color.description}
-                    </p>
-                    <code className="text-xs bg-muted px-2 py-1 rounded">
-                      {color.cssVar}
-                    </code>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Typography */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold">Typography</h2>
-          <p className="text-muted-foreground">
-            Our typography system uses Inter for body text and Geist Mono for
-            code, with a modular scale for consistent sizing.
-          </p>
-
-          {/* Font Families */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">Font Families</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-sans">Inter</CardTitle>
-                  <CardDescription>
-                    Primary font for headings and body text
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="font-sans text-lg">
-                    The quick brown fox jumps over the lazy dog.
-                  </p>
-                  <code className="text-sm bg-muted px-2 py-1 rounded mt-2 block">
-                    font-family: var(--font-inter)
-                  </code>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-mono">Geist Mono</CardTitle>
-                  <CardDescription>
-                    Monospace font for code and technical content
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="font-mono text-lg">
-                    const hello = &quot;world&quot;;
-                  </p>
-                  <code className="text-sm bg-muted px-2 py-1 rounded mt-2 block">
-                    font-family: var(--font-geist-mono)
-                  </code>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Font Sizes */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">Font Sizes</h3>
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                {typographyScales.map((scale) => (
-                  <div
-                    key={scale.name}
-                    className="flex items-center justify-between border-b pb-3"
-                  >
-                    <div className="flex items-center gap-6">
-                      <code className="text-sm bg-muted px-2 py-1 rounded w-20 text-center">
-                        {scale.name}
-                      </code>
-                      <span className="text-sm text-muted-foreground w-12">
-                        {scale.size}
-                      </span>
-                    </div>
-                    <div className={scale.class}>The quick brown fox</div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Font Weights */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">Font Weights</h3>
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                {fontWeights.map((weight) => (
-                  <div
-                    key={weight.name}
-                    className="flex items-center justify-between border-b pb-3"
-                  >
-                    <div className="flex items-center gap-6">
-                      <code className="text-sm bg-muted px-2 py-1 rounded w-24 text-center">
-                        {weight.name}
-                      </code>
-                      <span className="text-sm text-muted-foreground w-12">
-                        {weight.weight}
-                      </span>
-                    </div>
-                    <div className={`${weight.class} text-lg`}>
-                      The quick brown fox
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Spacing */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold">Spacing Scale</h2>
-          <p className="text-muted-foreground">
-            Consistent spacing using a modular scale based on multiples of 4px.
-          </p>
-
-          <Card>
-            <CardContent className="pt-6 space-y-6">
-              {spacingScale.map((spacing) => (
-                <div key={spacing.name} className="space-y-2">
-                  <div className="flex items-center gap-4">
-                    <code className="text-sm bg-muted px-2 py-1 rounded w-16 text-center">
-                      {spacing.name}
-                    </code>
-                    <span className="text-sm text-muted-foreground">
-                      {spacing.size}
-                    </span>
-                  </div>
-                  <div className="flex">
+            {/* Semantic Colors */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">Semantic Colors</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {colorTokens.semantic.map((color) => (
+                  <Card key={color.name} className="overflow-hidden">
                     <div
-                      className="bg-primary"
-                      style={{
-                        width: spacing.size,
-                        height: spacing.size,
-                      }}
+                      className="h-20 border-b"
+                      style={{ backgroundColor: `hsl(var(${color.cssVar}))` }}
                     />
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Border Radius */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold">Border Radius</h2>
-          <p className="text-muted-foreground">
-            Border radius scale based on the --radius custom property (10px
-            base).
-          </p>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {radiusScale.map((radius) => (
-                  <div key={radius.name} className="text-center space-y-3">
-                    <div
-                      className={`${radius.class} bg-primary h-16 w-16 mx-auto`}
-                    />
-                    <div>
-                      <code className="text-sm bg-muted px-2 py-1 rounded block">
-                        {radius.name}
-                      </code>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {radius.var}
+                    <CardContent className="pt-4 space-y-2">
+                      <h4 className="font-medium">{color.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {color.description}
                       </p>
+                      <code className="text-xs bg-muted px-2 py-1 rounded">
+                        {color.cssVar}
+                      </code>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* UI Colors */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">UI Colors</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {colorTokens.ui.map((color) => (
+                  <Card key={color.name} className="overflow-hidden">
+                    <div
+                      className="h-20 border-b"
+                      style={{ backgroundColor: `hsl(var(${color.cssVar}))` }}
+                    />
+                    <CardContent className="pt-4 space-y-2">
+                      <h4 className="font-medium">{color.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {color.description}
+                      </p>
+                      <code className="text-xs bg-muted px-2 py-1 rounded">
+                        {color.cssVar}
+                      </code>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Chart Colors */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">Chart Colors</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {colorTokens.chart.map((color) => (
+                  <Card key={color.name} className="overflow-hidden">
+                    <div
+                      className="h-20 border-b"
+                      style={{ backgroundColor: `hsl(var(${color.cssVar}))` }}
+                    />
+                    <CardContent className="pt-4 space-y-2">
+                      <h4 className="font-medium">{color.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {color.description}
+                      </p>
+                      <code className="text-xs bg-muted px-2 py-1 rounded">
+                        {color.cssVar}
+                      </code>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Typography */}
+          <section className="space-y-6">
+            <h2 className="text-3xl font-semibold">Typography</h2>
+            <p className="text-muted-foreground">
+              Our typography system uses Inter for body text and Geist Mono for
+              code, with a modular scale for consistent sizing.
+            </p>
+
+            {/* Font Families */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">Font Families</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-sans">Inter</CardTitle>
+                    <CardDescription>
+                      Primary font for headings and body text
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="font-sans text-lg">
+                      The quick brown fox jumps over the lazy dog.
+                    </p>
+                    <code className="text-sm bg-muted px-2 py-1 rounded mt-2 block">
+                      font-family: var(--font-inter)
+                    </code>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-mono">Geist Mono</CardTitle>
+                    <CardDescription>
+                      Monospace font for code and technical content
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="font-mono text-lg">
+                      const hello = &quot;world&quot;;
+                    </p>
+                    <code className="text-sm bg-muted px-2 py-1 rounded mt-2 block">
+                      font-family: var(--font-geist-mono)
+                    </code>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Font Sizes */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">Font Sizes</h3>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  {typographyScales.map((scale) => (
+                    <div
+                      key={scale.name}
+                      className="flex items-center justify-between border-b pb-3"
+                    >
+                      <div className="flex items-center gap-6">
+                        <code className="text-sm bg-muted px-2 py-1 rounded w-20 text-center">
+                          {scale.name}
+                        </code>
+                        <span className="text-sm text-muted-foreground w-12">
+                          {scale.size}
+                        </span>
+                      </div>
+                      <div className={scale.class}>The quick brown fox</div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Font Weights */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">Font Weights</h3>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  {fontWeights.map((weight) => (
+                    <div
+                      key={weight.name}
+                      className="flex items-center justify-between border-b pb-3"
+                    >
+                      <div className="flex items-center gap-6">
+                        <code className="text-sm bg-muted px-2 py-1 rounded w-24 text-center">
+                          {weight.name}
+                        </code>
+                        <span className="text-sm text-muted-foreground w-12">
+                          {weight.weight}
+                        </span>
+                      </div>
+                      <div className={`${weight.class} text-lg`}>
+                        The quick brown fox
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* Spacing */}
+          <section className="space-y-6">
+            <h2 className="text-3xl font-semibold">Spacing Scale</h2>
+            <p className="text-muted-foreground">
+              Consistent spacing using a modular scale based on multiples of
+              4px.
+            </p>
+
+            <Card>
+              <CardContent className="pt-6 space-y-6">
+                {spacingScale.map((spacing) => (
+                  <div key={spacing.name} className="space-y-2">
+                    <div className="flex items-center gap-4">
+                      <code className="text-sm bg-muted px-2 py-1 rounded w-16 text-center">
+                        {spacing.name}
+                      </code>
+                      <span className="text-sm text-muted-foreground">
+                        {spacing.size}
+                      </span>
+                    </div>
+                    <div className="flex">
+                      <div
+                        className="bg-primary"
+                        style={{
+                          width: spacing.size,
+                          height: spacing.size,
+                        }}
+                      />
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </section>
+              </CardContent>
+            </Card>
+          </section>
 
-        {/* Components Showcase */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold">Components</h2>
-          <p className="text-muted-foreground">
-            Live examples of our UI components in action.
-          </p>
+          {/* Border Radius */}
+          <section className="space-y-6">
+            <h2 className="text-3xl font-semibold">Border Radius</h2>
+            <p className="text-muted-foreground">
+              Border radius scale based on the --radius custom property (10px
+              base).
+            </p>
 
-          {/* Buttons */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">Buttons</h3>
             <Card>
-              <CardContent className="pt-6 space-y-6">
-                <div className="space-y-3">
-                  <h4 className="font-medium">Variants</h4>
-                  <div className="flex flex-wrap gap-3">
-                    <Button variant="default">Default</Button>
-                    <Button variant="secondary">Secondary</Button>
-                    <Button variant="outline">Outline</Button>
-                    <Button variant="ghost">Ghost</Button>
-                    <Button variant="link">Link</Button>
-                    <Button variant="destructive">Destructive</Button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className="font-medium">Sizes</h4>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Button size="sm">Small</Button>
-                    <Button size="default">Default</Button>
-                    <Button size="lg">Large</Button>
-                    <Button size="icon">
-                      <span className="sr-only">Icon</span>✨
-                    </Button>
-                  </div>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {radiusScale.map((radius) => (
+                    <div key={radius.name} className="text-center space-y-3">
+                      <div
+                        className={`${radius.class} bg-primary h-16 w-16 mx-auto`}
+                      />
+                      <div>
+                        <code className="text-sm bg-muted px-2 py-1 rounded block">
+                          {radius.name}
+                        </code>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {radius.var}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </section>
 
-          {/* Form Elements */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">Form Elements</h3>
-            <Card>
-              <CardContent className="pt-6 space-y-6">
-                <div className="space-y-3">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                  />
-                </div>
+          {/* Components Showcase */}
+          <section className="space-y-6">
+            <h2 className="text-3xl font-semibold">Components</h2>
+            <p className="text-muted-foreground">
+              Live examples of our UI components in action.
+            </p>
 
-                <div className="space-y-3">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                  />
-                </div>
-
-                <Button className="w-full">Submit</Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Cards */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-medium">Cards</h3>
-            <div className="grid md:grid-cols-2 gap-6">
+            {/* Buttons */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">Buttons</h3>
               <Card>
-                <CardHeader>
-                  <CardTitle>Basic Card</CardTitle>
-                  <CardDescription>
-                    This is a simple card component with header and content.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm">
-                    Cards are flexible containers for grouping related content
-                    and actions.
-                  </p>
-                </CardContent>
-              </Card>
+                <CardContent className="pt-6 space-y-6">
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Variants</h4>
+                    <div className="flex flex-wrap gap-3">
+                      <Button variant="default">Default</Button>
+                      <Button variant="secondary">Secondary</Button>
+                      <Button variant="outline">Outline</Button>
+                      <Button variant="ghost">Ghost</Button>
+                      <Button variant="link">Link</Button>
+                      <Button variant="destructive">Destructive</Button>
+                    </div>
+                  </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Feature Card</CardTitle>
-                  <CardDescription>
-                    Another variation of the card component.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 bg-green-500 rounded-full" />
-                    <span className="text-sm">Active feature</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 bg-blue-500 rounded-full" />
-                    <span className="text-sm">Beta feature</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 bg-yellow-500 rounded-full" />
-                    <span className="text-sm">Coming soon</span>
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Sizes</h4>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button size="sm">Small</Button>
+                      <Button size="default">Default</Button>
+                      <Button size="lg">Large</Button>
+                      <Button size="icon">
+                        <span className="sr-only">Icon</span>✨
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </section>
 
-        {/* Usage Guidelines */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold">Usage Guidelines</h2>
+            {/* Form Elements */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">Form Elements</h3>
+              <Card>
+                <CardContent className="pt-6 space-y-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                    />
+                  </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Design Principles</CardTitle>
-              <CardDescription>
-                Key principles that guide our design system decisions.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <h4 className="font-medium">Consistency</h4>
-                <p className="text-sm text-muted-foreground">
-                  Use design tokens consistently across all components and
-                  pages.
-                </p>
+                  <div className="space-y-3">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                    />
+                  </div>
+
+                  <Button className="w-full">Submit</Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Cards */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-medium">Cards</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Basic Card</CardTitle>
+                    <CardDescription>
+                      This is a simple card component with header and content.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Cards are flexible containers for grouping related content
+                      and actions.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Feature Card</CardTitle>
+                    <CardDescription>
+                      Another variation of the card component.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 bg-green-500 rounded-full" />
+                      <span className="text-sm">Active feature</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                      <span className="text-sm">Beta feature</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 bg-yellow-500 rounded-full" />
+                      <span className="text-sm">Coming soon</span>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
+            </div>
+          </section>
 
-              <div className="space-y-2">
-                <h4 className="font-medium">Accessibility</h4>
-                <p className="text-sm text-muted-foreground">
-                  All colors meet WCAG contrast requirements, and components
-                  support keyboard navigation.
-                </p>
-              </div>
+          {/* Usage Guidelines */}
+          <section className="space-y-6">
+            <h2 className="text-3xl font-semibold">Usage Guidelines</h2>
 
-              <div className="space-y-2">
-                <h4 className="font-medium">Scalability</h4>
-                <p className="text-sm text-muted-foreground">
-                  The system is built to scale with your application as it
-                  grows.
-                </p>
-              </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Design Principles</CardTitle>
+                <CardDescription>
+                  Key principles that guide our design system decisions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Consistency</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Use design tokens consistently across all components and
+                    pages.
+                  </p>
+                </div>
 
-              <div className="space-y-2">
-                <h4 className="font-medium">Flexibility</h4>
-                <p className="text-sm text-muted-foreground">
-                  Components can be composed and customized while maintaining
-                  consistency.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
+                <div className="space-y-2">
+                  <h4 className="font-medium">Accessibility</h4>
+                  <p className="text-sm text-muted-foreground">
+                    All colors meet WCAG contrast requirements, and components
+                    support keyboard navigation.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-medium">Scalability</h4>
+                  <p className="text-sm text-muted-foreground">
+                    The system is built to scale with your application as it
+                    grows.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-medium">Flexibility</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Components can be composed and customized while maintaining
+                    consistency.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
