@@ -1,5 +1,6 @@
 "use client";
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,7 +25,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
-  Home,
   FileText,
   Settings,
   User as UserIcon,
@@ -64,11 +64,11 @@ const sidebarNavItems = [
   },
 ];
 
-interface DashboardLayoutProps {
+export default function ChatLayout({
+  children,
+}: {
   children: React.ReactNode;
-}
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -159,7 +159,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <SidebarMenu>
                       {sidebarNavItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href;
+                        const isActive =
+                          pathname === item.href ||
+                          (item.href === "/chat" &&
+                            pathname.startsWith("/chat"));
                         return (
                           <SidebarMenuItem key={item.href}>
                             <SidebarMenuButton asChild isActive={isActive}>
@@ -233,7 +236,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </header>
 
               {/* Main Content */}
-              <main className="flex-1 space-y-4 p-6">{children}</main>
+              <div
+                style={{ height: "calc(100vh - 11rem)" }}
+                className="overflow-hidden"
+              >
+                {children}
+              </div>
             </SidebarInset>
           </SidebarProvider>
         </div>

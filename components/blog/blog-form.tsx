@@ -21,6 +21,7 @@ import {
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getBlogImageUrl } from "@/lib/utils/image-utils";
+import { DEFAULT_BLOG_IMAGE } from "@/lib/utils/default-image";
 
 interface BlogFormProps {
   blog?: Blog;
@@ -51,6 +52,25 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
     maxFileSize: 5 * 1024 * 1024, // 5MB to match migration
     upsert: true, // Allow overwriting existing files
   });
+
+  // Function to detect if content is markdown
+  const isMarkdownContent = (content: string): boolean => {
+    if (!content) return false;
+
+    // Check for common markdown patterns
+    const markdownPatterns = [
+      /^#{1,6}\s+/m, // Headers (# ## ### etc)
+      /\*\*.*?\*\*/, // Bold text
+      /\*.*?\*/, // Italic text
+      /^\s*[-*+]\s+/m, // Unordered lists
+      /^\s*\d+\.\s+/m, // Ordered lists
+      /\[.*?\]\(.*?\)/, // Links
+      /```[\s\S]*?```/, // Code blocks
+      /`.*?`/, // Inline code
+    ];
+
+    return markdownPatterns.some((pattern) => pattern.test(content));
+  };
 
   // Reset dropzone when blog data changes (for edit mode)
   useEffect(() => {
@@ -112,12 +132,21 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
 
     startTransition(async () => {
       try {
+        // Prepare form data with default image if no image is provided
+        const blogData = {
+          ...formData,
+          image:
+            formData.image || formData.image_path
+              ? formData.image
+              : DEFAULT_BLOG_IMAGE,
+        };
+
         if (mode === "create") {
-          const newBlog = await createBlog(formData);
+          const newBlog = await createBlog(blogData);
           toast.success("Blog post created successfully!");
           router.push(`/dashboard`);
         } else if (blog) {
-          await updateBlog(blog.id, formData);
+          await updateBlog(blog.id, blogData);
           toast.success("Blog post updated successfully!");
         }
       } catch (error) {
@@ -300,6 +329,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
               content={formData.content}
               onChange={(content) => setFormData({ ...formData, content })}
               placeholder="Start writing your blog post..."
+              isMarkdown={isMarkdownContent(formData.content)}
             />
             {errors.content && (
               <p className="text-sm text-red-500 mt-2">{errors.content}</p>

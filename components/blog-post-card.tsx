@@ -11,6 +11,7 @@ import { deleteBlog } from "@/lib/actions/blog";
 import { toast } from "sonner";
 import { useTransition, useState } from "react";
 import { getReadTime } from "@/lib/utils/read-time";
+import { DEFAULT_BLOG_IMAGE, hasCustomImage } from "@/lib/utils/default-image";
 
 interface BlogPostCardProps {
   id: string;
@@ -76,20 +77,31 @@ export function BlogPostCard({
       }
     });
   };
+  const displayImageUrl = imageUrl || DEFAULT_BLOG_IMAGE;
+  const isCustomImagePresent = hasCustomImage(imageUrl, null);
+
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-300 overflow-hidden p-0">
       {/* Hero Image */}
-      {imageUrl && (
-        <div className="aspect-video w-full overflow-hidden bg-muted">
-          <Image
-            src={imageUrl}
-            alt={title}
-            width={400}
-            height={225}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        </div>
-      )}
+      <div className="aspect-video w-full overflow-hidden bg-muted relative">
+        <Image
+          src={displayImageUrl}
+          alt={title}
+          width={400}
+          height={225}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        {/* No Image Indicator */}
+        {!isCustomImagePresent && (
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+            <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
+              <span className="text-xs font-medium text-gray-700">
+                No Image
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
 
       <CardContent className="p-6 space-y-4">
         {/* Category Badge and Read Time */}

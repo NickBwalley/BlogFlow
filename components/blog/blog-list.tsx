@@ -17,6 +17,10 @@ import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import Image from "next/image";
+import {
+  getBlogImageWithDefault,
+  hasCustomImage,
+} from "@/lib/utils/default-image";
 
 interface BlogListProps {
   blogs: BlogListItem[];
@@ -75,16 +79,24 @@ export function BlogList({ blogs, showUserBlogs = false }: BlogListProps) {
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {blogs.map((blog) => (
         <Card key={blog.id} className="flex flex-col overflow-hidden p-0">
-          {blog.image && (
-            <div className="aspect-video overflow-hidden relative">
-              <Image
-                src={blog.image}
-                alt={blog.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
+          <div className="aspect-video overflow-hidden relative">
+            <Image
+              src={getBlogImageWithDefault(blog.image, blog.image_path)}
+              alt={blog.title}
+              fill
+              className="object-cover"
+            />
+            {/* No Image Indicator */}
+            {!hasCustomImage(blog.image, blog.image_path) && (
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
+                  <span className="text-xs font-medium text-gray-700">
+                    No Image
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
 
           <CardHeader className="flex-1 p-6">
             <CardTitle className="line-clamp-2">{blog.title}</CardTitle>

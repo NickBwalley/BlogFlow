@@ -10,7 +10,7 @@ interface HeaderProps {
   variant?: "light" | "dark";
 }
 
-export function Header({ variant = "dark" }: HeaderProps) {
+export function Header({ variant = "light" }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -116,6 +116,14 @@ export function Header({ variant = "dark" }: HeaderProps) {
               >
                 Featured
               </Link>
+              {isAuthenticated && (
+                <Link
+                  href="/chat"
+                  className={`text-sm font-medium ${styles.textMuted} ${styles.textHover} transition-colors`}
+                >
+                  Chat
+                </Link>
+              )}
             </nav>
 
             {/* Desktop Right Side Actions */}
@@ -211,6 +219,15 @@ export function Header({ variant = "dark" }: HeaderProps) {
                 >
                   Contact
                 </Link>
+                {isAuthenticated && (
+                  <Link
+                    href="/chat"
+                    className={`text-sm font-medium ${styles.textMuted} ${styles.textHover} transition-colors py-2`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Chat
+                  </Link>
+                )}
                 <div
                   className={`flex flex-col gap-3 pt-3 border-t ${styles.border}`}
                 >

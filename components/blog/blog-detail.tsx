@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import Image from "next/image";
+import { getBlogImageWithDefault } from "@/lib/utils/default-image";
 
 interface BlogDetailProps {
   blog: Blog;
@@ -24,6 +25,24 @@ export function BlogDetail({
   category = "Design",
   readTime = 1,
 }: BlogDetailProps) {
+  // Function to detect if content is markdown
+  const isMarkdownContent = (content: string): boolean => {
+    if (!content) return false;
+
+    // Check for common markdown patterns
+    const markdownPatterns = [
+      /^#{1,6}\s+/m, // Headers (# ## ### etc)
+      /\*\*.*?\*\*/, // Bold text
+      /\*.*?\*/, // Italic text
+      /^\s*[-*+]\s+/m, // Unordered lists
+      /^\s*\d+\.\s+/m, // Ordered lists
+      /\[.*?\]\(.*?\)/, // Links
+      /```[\s\S]*?```/, // Code blocks
+      /`.*?`/, // Inline code
+    ];
+
+    return markdownPatterns.some((pattern) => pattern.test(content));
+  };
   return (
     <article className="max-w-4xl mx-auto">
       {showBackButton && (
@@ -39,16 +58,14 @@ export function BlogDetail({
 
       {/* Header */}
       <header className="mb-8">
-        {blog.image && (
-          <div className="aspect-video overflow-hidden rounded-lg mb-6 relative">
-            <Image
-              src={blog.image}
-              alt={blog.title}
-              fill
-              className="object-cover"
-            />
-          </div>
-        )}
+        <div className="aspect-video overflow-hidden rounded-lg mb-6 relative">
+          <Image
+            src={getBlogImageWithDefault(blog.image, blog.image_path)}
+            alt={blog.title}
+            fill
+            className="object-cover"
+          />
+        </div>
 
         {/* Category Badge and Read Time */}
         <div className="flex items-center justify-between mb-6">
@@ -90,6 +107,7 @@ export function BlogDetail({
           content={blog.content}
           onChange={() => {}} // Read-only
           editable={false}
+          isMarkdown={isMarkdownContent(blog.content)}
         />
       </div>
     </article>

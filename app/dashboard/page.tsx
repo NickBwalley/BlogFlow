@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BlogPostCard } from "@/components/blog-post-card";
+import { BlogCreationModal } from "@/components/blog/blog-creation-modal";
 import { getUserBlogs } from "@/lib/actions/blog";
 import { getBlogImageUrl } from "@/lib/utils/image-utils";
+import { getBlogImageWithDefault } from "@/lib/utils/default-image";
 import { BlogListItem } from "@/types/blog";
 import { Plus } from "lucide-react";
 
 export default function DashboardHome() {
   const [blogs, setBlogs] = useState<BlogListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Function to load blogs
   const loadBlogs = async () => {
@@ -37,6 +39,15 @@ export default function DashboardHome() {
     loadBlogs();
   };
 
+  // Function to handle modal close and refresh
+  const handleModalClose = (open: boolean) => {
+    setIsModalOpen(open);
+    if (!open) {
+      // Refresh blogs when modal closes (in case a new blog was created)
+      loadBlogs();
+    }
+  };
+
   // Map blog data to BlogPostCard format
   const blogCardData = blogs.map((blog) => ({
     id: blog.id,
@@ -48,7 +59,7 @@ export default function DashboardHome() {
     views: 0, // Default views
     comments: 0, // Default comments
     status: "published" as const,
-    imageUrl: blog.image || getBlogImageUrl(blog.image_path) || undefined,
+    imageUrl: getBlogImageWithDefault(blog.image, blog.image_path),
     authorName: blog.author,
     slug: blog.slug,
     showDelete: true,
@@ -66,11 +77,9 @@ export default function DashboardHome() {
               Manage and organize your blog content.
             </p>
           </div>
-          <Button asChild>
-            <Link href="/dashboard/blogs/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Post
-            </Link>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Post
           </Button>
         </div>
         <div className="text-center py-12">
@@ -91,11 +100,9 @@ export default function DashboardHome() {
               Manage and organize your blog content.
             </p>
           </div>
-          <Button asChild>
-            <Link href="/dashboard/blogs/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Post
-            </Link>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Post
           </Button>
         </div>
 
@@ -108,12 +115,10 @@ export default function DashboardHome() {
             <p className="text-gray-600 mb-6">
               Get started by creating your first blog post.
             </p>
-            <Link href="/dashboard/blogs/new">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Blog
-              </Button>
-            </Link>
+            <Button onClick={() => setIsModalOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Your First Blog
+            </Button>
           </div>
         </div>
       </div>
@@ -130,11 +135,9 @@ export default function DashboardHome() {
             Manage and organize your blog content.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/blogs/new">
-            <Plus className="mr-2 h-4 w-4" />
-            New Post
-          </Link>
+        <Button onClick={() => setIsModalOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Post
         </Button>
       </div>
 
@@ -144,6 +147,9 @@ export default function DashboardHome() {
           <BlogPostCard key={blog.id} {...blog} />
         ))}
       </div>
+
+      {/* Blog Creation Modal */}
+      <BlogCreationModal open={isModalOpen} onOpenChange={handleModalClose} />
     </div>
   );
 }

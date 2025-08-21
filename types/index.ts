@@ -9,3 +9,12 @@ export type {
   CreateProfileData,
   UpdateProfileData,
 } from "./profile";
+
+// Chat types
+export type {
+  Chat,
+  Message,
+  CreateChatData,
+  CreateMessageData,
+  ChatWithMessages,
+} from "./chat";

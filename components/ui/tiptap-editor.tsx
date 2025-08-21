@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import Typography from "@tiptap/extension-typography";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -17,13 +18,15 @@ import {
   Undo,
   Redo,
 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { markdownToHtml } from "@/lib/utils/markdown-utils";
 
 interface TiptapEditorProps {
   content: string;
   onChange: (content: string) => void;
   placeholder?: string;
   editable?: boolean;
+  isMarkdown?: boolean; // Flag to indicate if content is markdown
 }
 
 export function TiptapEditor({
@@ -31,7 +34,13 @@ export function TiptapEditor({
   onChange,
   placeholder = "Start writing your blog post...",
   editable = true,
+  isMarkdown = false,
 }: TiptapEditorProps) {
+  // Memoize the processed content to avoid recreating it on every render
+  const processedContent = useMemo(() => {
+    return isMarkdown ? markdownToHtml(content) : content;
+  }, [content, isMarkdown]);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -45,11 +54,12 @@ export function TiptapEditor({
           class: "text-blue-600 hover:text-blue-800 underline",
         },
       }),
+      Typography,
       Placeholder.configure({
         placeholder,
       }),
     ],
-    content,
+    content: processedContent,
     editable,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
@@ -63,6 +73,23 @@ export function TiptapEditor({
       },
     },
   });
+
+  // Update editor content when processed content changes
+  useEffect(() => {
+    if (editor && processedContent !== undefined) {
+      const currentContent = editor.getHTML();
+
+      // Only update if content is different to avoid unnecessary re-renders
+      if (currentContent !== processedContent) {
+        editor.commands.setContent(processedContent);
+
+        // For read-only mode, ensure focus is removed
+        if (!editable) {
+          editor.commands.blur();
+        }
+      }
+    }
+  }, [editor, processedContent, editable]);
 
   const setLink = useCallback(() => {
     if (!editor) return;
