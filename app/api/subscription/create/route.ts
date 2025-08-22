@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/server";
 import { createSubscription } from "@/lib/subscription/actions";
+import { checkAPIRateLimit } from "@/lib/rate-limit-api";
 import { z } from "zod";
 
 const createSubscriptionSchema = z.object({
@@ -14,6 +15,11 @@ const createSubscriptionSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting for subscription endpoints
+  const rateLimitCheck = await checkAPIRateLimit(request, "api-user");
+  if (!rateLimitCheck.allowed) {
+    return rateLimitCheck.response!;
+  }
   try {
     const body = await request.json();
     const validatedData = createSubscriptionSchema.parse(body);

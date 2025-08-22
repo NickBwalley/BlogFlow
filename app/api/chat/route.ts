@@ -1,10 +1,17 @@
 import { openai } from "@ai-sdk/openai";
 import { streamText, UIMessage, convertToModelMessages } from "ai";
+import { checkAPIRateLimit } from "@/lib/rate-limit-api";
+import { NextRequest } from "next/server";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // Apply chat-specific rate limiting (5 messages per minute)
+  const rateLimitCheck = await checkAPIRateLimit(req, "chat");
+  if (!rateLimitCheck.allowed) {
+    return rateLimitCheck.response!;
+  }
   try {
     const { messages }: { messages: UIMessage[] } = await req.json();
 

@@ -9,7 +9,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { toast } from "sonner";
 import { saveMessage } from "@/lib/actions/chat";
+import { handleApiError } from "@/lib/utils/rate-limit-toast";
 import type { Message as MessageType } from "@/types";
 
 interface ChatInterfaceProps {
@@ -23,9 +25,86 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
-  const [isPending, setIsPending] = useState(false);
 
-  const { messages, sendMessage } = useChat();
+  const { messages, sendMessage, isLoading, error } = useChat({
+    initialMessages: initialMessages.map((msg) => ({
+      id: msg.id,
+      role: msg.role as "user" | "assistant",
+      content: msg.content,
+    })),
+    api: "/api/chat",
+    onFinish: async (message) => {
+      // Save the assistant's message to database when response is complete
+      if (chatId) {
+        try {
+          await saveMessage({
+            chat_id: chatId,
+            role: "assistant",
+            content: message.content,
+          });
+        } catch (error) {
+          console.error("Error saving assistant message to database:", error);
+        }
+      }
+    },
+    onError: async (error) => {
+      console.error("Chat API error:", error);
+
+      try {
+        // Try to parse the error message if it's a JSON string
+        let errorData = null;
+        if (error.message.startsWith("{")) {
+          errorData = JSON.parse(error.message);
+        }
+
+        // Check if it's a rate limit error
+        if (
+          error.message.includes("429") ||
+          error.message.toLowerCase().includes("rate limit") ||
+          error.message.toLowerCase().includes("too many requests") ||
+          (errorData && errorData.error === "Too Many Requests")
+        ) {
+          const retryAfter = errorData?.retryAfter || 60;
+          const retryTime =
+            retryAfter < 60
+              ? `${retryAfter} seconds`
+              : `${Math.ceil(retryAfter / 60)} minutes`;
+
+          toast.error("Rate Limit Exceeded", {
+            description: `You're sending messages too quickly. Please wait ${retryTime} before trying again.`,
+            duration: Math.min(retryAfter * 1000, 10000), // Show for retry time or max 10 seconds
+            action: {
+              label: "Dismiss",
+              onClick: () => {},
+            },
+          });
+        } else {
+          toast.error("Chat Error", {
+            description: "Failed to send message. Please try again.",
+            duration: 5000,
+          });
+        }
+      } catch (parseError) {
+        // Fallback if JSON parsing fails
+        if (
+          error.message.includes("429") ||
+          error.message.toLowerCase().includes("rate limit") ||
+          error.message.toLowerCase().includes("too many requests")
+        ) {
+          toast.error("Rate Limit Exceeded", {
+            description:
+              "You're sending messages too quickly. Please wait a moment before trying again.",
+            duration: 5000,
+          });
+        } else {
+          toast.error("Chat Error", {
+            description: "Failed to send message. Please try again.",
+            duration: 5000,
+          });
+        }
+      }
+    },
+  });
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -41,28 +120,26 @@ export function ChatInterface({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isPending) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
     setInput("");
-    setIsPending(true);
 
-    try {
-      // Save user message to database if we have a chatId
-      if (chatId) {
+    // Save user message to database first (if we have a chatId)
+    if (chatId) {
+      try {
         await saveMessage({
           chat_id: chatId,
           role: "user",
           content: userMessage,
         });
+      } catch (error) {
+        console.error("Error saving user message to database:", error);
       }
-
-      // Send message to AI (this will handle the loading state)
-      sendMessage({ text: userMessage });
-    } catch (error) {
-      console.error("Error sending message:", error);
-      setIsPending(false);
     }
+
+    // Send message to AI - assistant response will be saved in onFinish
+    sendMessage({ text: userMessage });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -145,7 +222,7 @@ export function ChatInterface({
             ))
           )}
 
-          {isPending && (
+          {isLoading && (
             <div className="flex gap-3 justify-start">
               <Avatar className="w-8 h-8 mt-1">
                 <AvatarFallback>
@@ -174,13 +251,13 @@ export function ChatInterface({
               onKeyDown={handleKeyDown}
               placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)"
               className="min-h-[60px] max-h-32 resize-none"
-              disabled={isPending}
+              disabled={isLoading}
             />
             <Button
               type="submit"
               size="icon"
               className="h-[60px] w-[60px]"
-              disabled={!input.trim() || isPending}
+              disabled={!input.trim() || isLoading}
             >
               <Send className="h-4 w-4" />
             </Button>

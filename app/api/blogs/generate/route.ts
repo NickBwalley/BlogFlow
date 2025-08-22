@@ -9,6 +9,8 @@ import {
   incrementAIPostUsage,
 } from "@/lib/subscription/actions";
 import { validateWordLimit, truncateToWordLimit } from "@/lib/utils/word-count";
+import { checkAPIRateLimit } from "@/lib/rate-limit-api";
+import { NextRequest } from "next/server";
 
 // Schema for the generated blog post
 const BlogPostSchema = z.object({
@@ -24,7 +26,12 @@ const BlogPostSchema = z.object({
   author: z.string().describe("Author name for the blog post"),
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // Apply blog generation specific rate limiting (5 generations per minute)
+  const rateLimitCheck = await checkAPIRateLimit(req, "blog-generation");
+  if (!rateLimitCheck.allowed) {
+    return rateLimitCheck.response!;
+  }
   try {
     const { description } = await req.json();
 

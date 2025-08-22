@@ -19,6 +19,7 @@ import {
 } from "@/lib/subscription/config";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { handleApiError } from "@/lib/utils/rate-limit-toast";
 
 interface PaymentFormProps {
   selectedPlan: SubscriptionPlan;
@@ -101,6 +102,12 @@ export function PaymentForm({
           },
         }),
       });
+
+      // Handle rate limit errors with toast notification
+      if (response.status === 429) {
+        await handleApiError(response);
+        return;
+      }
 
       const result = await response.json();
 

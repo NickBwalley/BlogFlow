@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionRefresh } from "@/components/providers/subscription-refresh-provider";
+import { handleApiError } from "@/lib/utils/rate-limit-toast";
 
 interface BlogCreationModalProps {
   open: boolean;
@@ -139,6 +140,12 @@ export function BlogCreationModal({
           description: aiDescription.trim(),
         }),
       });
+
+      // Handle rate limit errors with toast notification
+      if (response.status === 429) {
+        await handleApiError(response);
+        return;
+      }
 
       const result = await response.json();
 

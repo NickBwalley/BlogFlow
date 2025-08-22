@@ -119,6 +119,7 @@ export type Database = {
           email: string;
           first_name: string | null;
           id: string;
+          role: string;
           subscription_status: string | null;
           subscription_tier: string | null;
           updated_at: string;
@@ -130,6 +131,7 @@ export type Database = {
           email: string;
           first_name?: string | null;
           id?: string;
+          role?: string;
           subscription_status?: string | null;
           subscription_tier?: string | null;
           updated_at?: string;
@@ -141,6 +143,7 @@ export type Database = {
           email?: string;
           first_name?: string | null;
           id?: string;
+          role?: string;
           subscription_status?: string | null;
           subscription_tier?: string | null;
           updated_at?: string;
