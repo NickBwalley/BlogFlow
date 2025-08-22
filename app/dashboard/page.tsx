@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { BlogPostCard } from "@/components/blog-post-card";
 import { BlogCreationModal } from "@/components/blog/blog-creation-modal";
@@ -9,10 +10,22 @@ import { getBlogImageWithDefault } from "@/lib/utils/default-image";
 import { BlogListItem } from "@/types/blog";
 import { Plus } from "lucide-react";
 
-export default function DashboardHome() {
+interface DashboardHomeProps {
+  isModalOpen: boolean;
+  handleModalClose: (open: boolean) => void;
+  handleOpenModal: () => void;
+  refreshTrigger: number;
+}
+
+function DashboardHome({
+  isModalOpen,
+  handleModalClose,
+  handleOpenModal,
+  refreshTrigger,
+}: DashboardHomeProps) {
+  const router = useRouter();
   const [blogs, setBlogs] = useState<BlogListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Function to load blogs
   const loadBlogs = async () => {
@@ -27,24 +40,15 @@ export default function DashboardHome() {
     }
   };
 
-  // Load blogs on component mount
+  // Load blogs on component mount and when refresh is triggered
   useEffect(() => {
     loadBlogs();
-  }, []);
+  }, [refreshTrigger]);
 
   // Function to handle blog deletion
   const handleBlogDelete = () => {
     // Refresh the blogs list after deletion
     loadBlogs();
-  };
-
-  // Function to handle modal close and refresh
-  const handleModalClose = (open: boolean) => {
-    setIsModalOpen(open);
-    if (!open) {
-      // Refresh blogs when modal closes (in case a new blog was created)
-      loadBlogs();
-    }
   };
 
   // Map blog data to BlogPostCard format
@@ -76,7 +80,7 @@ export default function DashboardHome() {
               Manage and organize your blog content.
             </p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={handleOpenModal}>
             <Plus className="mr-2 h-4 w-4" />
             New Post
           </Button>
@@ -99,7 +103,7 @@ export default function DashboardHome() {
               Manage and organize your blog content.
             </p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={handleOpenModal}>
             <Plus className="mr-2 h-4 w-4" />
             New Post
           </Button>
@@ -114,7 +118,7 @@ export default function DashboardHome() {
             <p className="text-gray-600 mb-6">
               Get started by creating your first blog post.
             </p>
-            <Button onClick={() => setIsModalOpen(true)}>
+            <Button onClick={handleOpenModal}>
               <Plus className="h-4 w-4 mr-2" />
               Create Your First Blog
             </Button>
@@ -134,7 +138,7 @@ export default function DashboardHome() {
             Manage and organize your blog content.
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={handleOpenModal}>
           <Plus className="mr-2 h-4 w-4" />
           New Post
         </Button>
@@ -146,9 +150,42 @@ export default function DashboardHome() {
           <BlogPostCard key={blog.id} {...blog} />
         ))}
       </div>
-
-      {/* Blog Creation Modal */}
-      <BlogCreationModal open={isModalOpen} onOpenChange={handleModalClose} />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Function to handle modal close and refresh
+  const handleModalClose = (open: boolean) => {
+    console.log("handleModalClose called with open:", open);
+    setIsModalOpen(open);
+    if (!open) {
+      // Trigger refresh when modal closes (in case a new blog was created)
+      setRefreshTrigger((prev) => prev + 1);
+    }
+  };
+
+  // Function to handle modal opening
+  const handleOpenModal = () => {
+    console.log("handleOpenModal called, setting modal to true");
+    setIsModalOpen(true);
+    console.log("Modal state after setting:", true);
+  };
+
+  return (
+    <>
+      <DashboardHome
+        isModalOpen={isModalOpen}
+        handleModalClose={handleModalClose}
+        handleOpenModal={handleOpenModal}
+        refreshTrigger={refreshTrigger}
+      />
+
+      {/* Blog Creation Modal - Single instance rendered here to avoid duplicates */}
+      <BlogCreationModal open={isModalOpen} onOpenChange={handleModalClose} />
+    </>
   );
 }

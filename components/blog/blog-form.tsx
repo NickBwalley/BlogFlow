@@ -144,6 +144,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
         } else if (blog) {
           await updateBlog(blog.id, blogData);
           toast.success("Blog post updated successfully!");
+          router.push("/dashboard");
         }
       } catch (error) {
         console.error("Failed to save blog:", error);

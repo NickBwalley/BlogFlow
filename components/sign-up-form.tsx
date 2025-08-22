@@ -40,17 +40,51 @@ export function SignUpForm({
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/confirm?next=/dashboard`,
         },
       });
-      if (error) throw error;
-      router.push("/auth/sign-up-success");
+
+      if (error) {
+        // Handle specific error types
+        if (error.message.includes("already registered")) {
+          setError("This email is already registered. Try signing in instead.");
+        } else if (error.message.includes("weak password")) {
+          setError(
+            "Password is too weak. Use at least 8 characters with letters and numbers."
+          );
+        } else if (error.message.includes("invalid email")) {
+          setError("Please enter a valid email address.");
+        } else {
+          setError(error.message);
+        }
+        return;
+      }
+
+      // Success - user created
+      if (data.user) {
+        router.push("/auth/sign-up-success");
+      } else {
+        setError("Signup failed. Please try again.");
+      }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      console.error("Signup error:", error);
+      if (error instanceof Error) {
+        if (error.message.includes("422")) {
+          setError(
+            "Invalid signup data. Please check your email and password."
+          );
+        } else if (error.message.includes("500")) {
+          setError("Server error during signup. Please try again in a moment.");
+        } else {
+          setError(error.message);
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }

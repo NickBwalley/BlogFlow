@@ -10,6 +10,8 @@ create table if not exists public.profiles (
     first_name text,
     avatar_url text,
     email text not null,
+    subscription_status text default 'free',
+    subscription_tier text default 'free',
     created_at timestamp with time zone default now() not null,
     updated_at timestamp with time zone default now() not null
 );
@@ -43,6 +45,20 @@ create policy "Users can delete own profile"
     for delete 
     using (auth.uid() = user_id);
 
+-- system-level policies for automatic operations during signup
+create policy "System can insert profiles during signup" 
+    on public.profiles 
+    for insert 
+    to postgres
+    with check (true);
+
+create policy "System can update profiles during sync" 
+    on public.profiles 
+    for update 
+    to postgres
+    using (true)
+    with check (true);
+
 -- function to handle updated_at timestamp
 create or replace function public.handle_updated_at()
 returns trigger as $$
@@ -62,8 +78,20 @@ create trigger update_profiles_updated_at
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-    insert into public.profiles (user_id, email)
-    values (new.id, new.email);
+  -- Insert profile with all required fields including subscription defaults
+  insert into public.profiles (user_id, email, subscription_status, subscription_tier)
+  values (new.id, new.email, 'free', 'free')
+  on conflict (user_id) do update set
+    email = new.email,
+    subscription_status = coalesce(public.profiles.subscription_status, 'free'),
+    subscription_tier = coalesce(public.profiles.subscription_tier, 'free'),
+    updated_at = now();
+  
+  return new;
+exception 
+  when others then
+    -- Log error but don't fail the signup
+    raise warning 'Failed to create profile for user %: %', new.id, sqlerrm;
     return new;
 end;
 $$ language plpgsql security definer;

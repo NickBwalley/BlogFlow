@@ -4,6 +4,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/server";
 import { revalidatePath } from "next/cache";
 import { DEFAULT_BLOG_IMAGE } from "@/lib/utils/default-image";
+import {
+  getSubscriptionUsage,
+  incrementAIPostUsage,
+} from "@/lib/subscription/actions";
+import { validateWordLimit, truncateToWordLimit } from "@/lib/utils/word-count";
 
 // Schema for the generated blog post
 const BlogPostSchema = z.object({
@@ -44,6 +49,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check AI post usage and limits
+    const subscriptionUsage = await getSubscriptionUsage(user.id);
+
+    if (!subscriptionUsage.canGenerateAI) {
+      return Response.json(
+        {
+          success: false,
+          error: `You've reached your AI post limit (${subscriptionUsage.aiPostsLimit}). Upgrade your plan to generate more AI posts.`,
+          limitReached: true,
+          usage: subscriptionUsage,
+        },
+        { status: 403 }
+      );
+    }
+
     // Get user profile for author name
     const { data: profile } = await supabase
       .from("profiles")
@@ -57,31 +77,85 @@ export async function POST(req: Request) {
       user.email?.split("@")[0] ||
       "Anonymous";
 
+    // Extract word count preference from description if specified
+    const wordCountMatch = description.match(/(\d+)\s*words?/i);
+    const requestedWordCount = wordCountMatch
+      ? parseInt(wordCountMatch[1])
+      : null;
+
+    // Use requested word count or default to 300 as a guideline
+    const targetWordCount = requestedWordCount || 300;
+    const isCustomWordCount = requestedWordCount !== null;
+
     // Generate blog content using AI
     const { object: blogPost } = await generateObject({
       model: openai("gpt-4o"),
       schema: BlogPostSchema,
       temperature: 0.7,
-      prompt: `Create a comprehensive, engaging blog post based on this description: "${description}"
+      prompt: `Create an engaging blog post based on this description: "${description}"
 
-Requirements:
+REQUIREMENTS:
+- Target approximately ${targetWordCount} words for the content${
+        isCustomWordCount
+          ? " (as specifically requested)"
+          : " (default guideline)"
+      }
 - Write in a conversational, engaging tone
 - Include proper headings and subheadings
 - Use markdown formatting
 - Make it SEO-friendly
-- Target length: 800-1500 words
 - Include actionable insights or takeaways
 - Make it valuable and informative for readers
 - Author name should be: ${authorName}
 
-Structure the content with:
-1. An engaging introduction
-2. Well-organized main sections with clear headings
-3. Practical examples or tips where relevant
-4. A strong conclusion
+Structure the content appropriately for ${targetWordCount} words:
+${
+  targetWordCount <= 300
+    ? `
+1. A brief engaging introduction (50-75 words)
+2. 1-2 main sections with clear headings (150-200 words total)
+3. A concise conclusion with key takeaway (25-50 words)`
+    : targetWordCount <= 600
+    ? `
+1. An engaging introduction (75-100 words)
+2. 2-3 main sections with clear headings (400-450 words total)
+3. A strong conclusion with key takeaways (50-75 words)`
+    : `
+1. A compelling introduction (100-150 words)
+2. 3-4 well-developed main sections with clear headings
+3. A comprehensive conclusion with actionable takeaways
+4. Include examples, case studies, or detailed explanations as appropriate`
+}
 
-Format the content in markdown with proper headings (##, ###), bullet points, and emphasis where appropriate.`,
+Format the content in markdown with proper headings (##, ###), bullet points, and emphasis where appropriate.
+${
+  isCustomWordCount
+    ? "Honor the specific word count requested by the user."
+    : "Aim for around 300 words as a good balance of conciseness and value."
+}`,
     });
+
+    // Validate content length - only truncate if extremely excessive
+    const wordValidation = validateWordLimit(blogPost.content, targetWordCount);
+    let finalContent = blogPost.content;
+
+    // Only truncate if content is more than 50% over the target (to prevent abuse)
+    const maxAllowedWords = Math.max(targetWordCount * 1.5, 500); // At least 500 words max
+
+    if (wordValidation.wordCount > maxAllowedWords) {
+      console.warn(
+        `Generated content significantly exceeded target ${targetWordCount} words (${wordValidation.wordCount} words). Truncating to ${maxAllowedWords} words...`
+      );
+      finalContent = truncateToWordLimit(blogPost.content, maxAllowedWords);
+    }
+
+    console.log(
+      `Generated blog post: ${
+        wordValidation.wordCount
+      } words (target: ${targetWordCount}${
+        isCustomWordCount ? " - user specified" : " - default"
+      })`
+    );
 
     // Generate a unique slug from the title
     const baseSlug = blogPost.title
@@ -114,7 +188,7 @@ Format the content in markdown with proper headings (##, ###), bullet points, an
         title: blogPost.title,
         slug: slug,
         subtitle: blogPost.subtitle,
-        content: blogPost.content,
+        content: finalContent, // Use the word-limit validated content
         author: blogPost.author,
         image: DEFAULT_BLOG_IMAGE, // Use default image for AI-generated posts
         user_id: user.id,
@@ -130,13 +204,27 @@ Format the content in markdown with proper headings (##, ###), bullet points, an
       );
     }
 
+    // Increment AI post usage counter
+    const incrementSuccess = await incrementAIPostUsage(user.id);
+    if (!incrementSuccess) {
+      console.warn(
+        "Failed to increment AI post usage counter for user:",
+        user.id
+      );
+      // Continue anyway since the blog was created successfully
+    }
+
     // Revalidate the dashboard page
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/blogs");
 
+    // Get updated usage for response
+    const updatedUsage = await getSubscriptionUsage(user.id);
+
     return Response.json({
       success: true,
       data: newBlog,
+      usage: updatedUsage,
     });
   } catch (error) {
     console.error("Error generating blog post:", error);

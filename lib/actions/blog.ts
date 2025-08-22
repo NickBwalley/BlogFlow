@@ -17,6 +17,18 @@ export async function createBlog(formData: BlogFormData) {
     throw new Error("User not authenticated");
   }
 
+  // Generate slug from title
+  const { data: slugData, error: slugError } = await supabase.rpc(
+    "generate_slug",
+    {
+      title: formData.title,
+    }
+  );
+
+  if (slugError) {
+    throw new Error(`Failed to generate slug: ${slugError.message}`);
+  }
+
   const blogData: BlogInsert = {
     title: formData.title,
     subtitle: formData.subtitle || null,
@@ -25,6 +37,7 @@ export async function createBlog(formData: BlogFormData) {
     content: formData.content,
     author: formData.author,
     user_id: user.id,
+    slug: slugData,
   };
 
   const { data, error } = await supabase

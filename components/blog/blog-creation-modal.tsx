@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +18,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FileText, Sparkles, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  FileText,
+  Sparkles,
+  Loader2,
+  AlertTriangle,
+  Crown,
+} from "lucide-react";
 import { toast } from "sonner";
+import { useSubscriptionRefresh } from "@/components/providers/subscription-refresh-provider";
 
 interface BlogCreationModalProps {
   open: boolean;
@@ -33,9 +41,57 @@ export function BlogCreationModal({
   onCreateFromScratch,
 }: BlogCreationModalProps) {
   const router = useRouter();
+  const { triggerRefresh } = useSubscriptionRefresh();
   const [step, setStep] = useState<"choose" | "ai-form">("choose");
   const [aiDescription, setAiDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [subscriptionUsage, setSubscriptionUsage] = useState<{
+    plan: string;
+    aiPostsUsed: number;
+    aiPostsLimit: number;
+    canGenerateAI: boolean;
+    remainingPosts: number;
+  } | null>(null);
+  const [loadingUsage, setLoadingUsage] = useState(true);
+
+  // Load subscription usage when modal opens
+  useEffect(() => {
+    const loadUsage = async () => {
+      if (!open) return;
+
+      try {
+        setLoadingUsage(true);
+        const response = await fetch("/api/subscription/usage");
+        if (response.ok) {
+          const usage = await response.json();
+          setSubscriptionUsage(usage);
+        } else {
+          // Fallback to default values if API fails
+          setSubscriptionUsage({
+            plan: "free",
+            aiPostsUsed: 0,
+            aiPostsLimit: 3,
+            remainingPosts: 3,
+            canGenerateAI: true,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load subscription usage:", error);
+        // Fallback to default values if API fails
+        setSubscriptionUsage({
+          plan: "free",
+          aiPostsUsed: 0,
+          aiPostsLimit: 3,
+          remainingPosts: 3,
+          canGenerateAI: true,
+        });
+      } finally {
+        setLoadingUsage(false);
+      }
+    };
+
+    loadUsage();
+  }, [open]);
 
   const handleCreateFromScratch = () => {
     if (onCreateFromScratch) {
@@ -61,6 +117,16 @@ export function BlogCreationModal({
       return;
     }
 
+    // Check if user can generate AI posts
+    if (!subscriptionUsage?.canGenerateAI) {
+      toast.error(
+        `You've reached your AI post limit (${
+          subscriptionUsage?.aiPostsLimit || 0
+        }). Upgrade your plan to generate more AI posts.`
+      );
+      return;
+    }
+
     setIsGenerating(true);
 
     try {
@@ -74,14 +140,27 @@ export function BlogCreationModal({
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to generate blog post");
-      }
-
       const result = await response.json();
 
-      if (result.success && result.data) {
-        toast.success("Blog post generated successfully!");
+      if (response.ok && result.success && result.data) {
+        // Update local usage state with response data
+        if (result.usage) {
+          setSubscriptionUsage(result.usage);
+        }
+
+        // Trigger subscription refresh in sidebar
+        triggerRefresh();
+
+        // Show success toast with usage information
+        const remainingAfterGeneration = result.usage?.remainingPosts ?? 0;
+        toast.success(
+          `✅ AI successfully generated your blog post! ${
+            remainingAfterGeneration > 0
+              ? `${remainingAfterGeneration} AI posts remaining.`
+              : `You've used all your AI posts for your ${result.usage?.plan} plan.`
+          }`
+        );
+
         onOpenChange(false);
         // Reset state
         setStep("choose");
@@ -89,7 +168,16 @@ export function BlogCreationModal({
         // Redirect to edit page with the generated blog
         router.push(`/dashboard/blogs/${result.data.id}/edit`);
       } else {
-        throw new Error(result.error || "Failed to generate blog post");
+        // Handle specific error cases
+        if (result.limitReached) {
+          toast.error(result.error || "You've reached your AI post limit.");
+          // Update usage state if provided
+          if (result.usage) {
+            setSubscriptionUsage(result.usage);
+          }
+        } else {
+          throw new Error(result.error || "Failed to generate blog post");
+        }
       }
     } catch (error) {
       console.error("Error generating blog post:", error);
@@ -136,17 +224,81 @@ export function BlogCreationModal({
               </Card>
 
               <Card
-                className="cursor-pointer hover:bg-accent transition-colors"
-                onClick={handleChooseAI}
+                className={`transition-colors ${
+                  loadingUsage
+                    ? "opacity-50"
+                    : subscriptionUsage?.canGenerateAI
+                    ? "cursor-pointer hover:bg-accent"
+                    : "opacity-60 cursor-not-allowed bg-muted"
+                }`}
+                onClick={
+                  !loadingUsage && subscriptionUsage?.canGenerateAI
+                    ? handleChooseAI
+                    : undefined
+                }
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-3 text-lg">
-                    <Sparkles className="h-5 w-5 text-purple-600" />
+                    <Sparkles
+                      className={`h-5 w-5 ${
+                        subscriptionUsage?.canGenerateAI
+                          ? "text-purple-600"
+                          : "text-muted-foreground"
+                      }`}
+                    />
                     Create with AI
+                    {loadingUsage ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      subscriptionUsage && (
+                        <div className="flex items-center gap-2 ml-auto">
+                          {subscriptionUsage.canGenerateAI ? (
+                            <Badge variant="secondary" className="text-xs">
+                              {subscriptionUsage.remainingPosts} remaining
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="destructive"
+                              className="text-xs flex items-center gap-1"
+                            >
+                              <AlertTriangle className="h-3 w-3" />
+                              Limit reached
+                            </Badge>
+                          )}
+                        </div>
+                      )
+                    )}
                   </CardTitle>
                   <CardDescription>
-                    Describe your topic and let AI generate a complete blog post
-                    for you
+                    {loadingUsage ? (
+                      "Loading usage information..."
+                    ) : !subscriptionUsage?.canGenerateAI ? (
+                      <>
+                        You&apos;ve used all{" "}
+                        {subscriptionUsage?.aiPostsLimit || 0} AI posts for your{" "}
+                        {subscriptionUsage?.plan} plan.{" "}
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-primary underline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenChange(false);
+                            router.push("/dashboard/pricing");
+                          }}
+                        >
+                          Upgrade now
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        Describe your topic and let AI generate a blog post for
+                        you. Mention word count if you have a preference.{" "}
+                        <span className="text-muted-foreground">
+                          ({subscriptionUsage.aiPostsUsed}/
+                          {subscriptionUsage.aiPostsLimit} used)
+                        </span>
+                      </>
+                    )}
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -160,10 +312,50 @@ export function BlogCreationModal({
               <DialogTitle className="flex items-center gap-3">
                 <Sparkles className="h-5 w-5 text-purple-600" />
                 Generate Blog with AI
+                {subscriptionUsage && (
+                  <Badge
+                    variant={
+                      subscriptionUsage.canGenerateAI
+                        ? "secondary"
+                        : "destructive"
+                    }
+                    className="text-xs"
+                  >
+                    {subscriptionUsage.aiPostsUsed}/
+                    {subscriptionUsage.aiPostsLimit} used
+                  </Badge>
+                )}
               </DialogTitle>
               <DialogDescription>
-                Describe what you want your blog post to be about, and AI will
-                create it for you
+                {subscriptionUsage?.canGenerateAI ? (
+                  <>
+                    Describe what you want your blog post to be about, and AI
+                    will create it for you. Specify word count if desired
+                    (default: ~300 words).
+                    {subscriptionUsage.remainingPosts === 1 && (
+                      <span className="text-orange-600 font-medium">
+                        {" "}
+                        This is your last AI post for your{" "}
+                        {subscriptionUsage.plan} plan.
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-destructive">
+                    You&apos;ve reached your AI post limit for your{" "}
+                    {subscriptionUsage?.plan} plan.
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto text-primary underline ml-1"
+                      onClick={() => {
+                        onOpenChange(false);
+                        router.push("/dashboard/pricing");
+                      }}
+                    >
+                      Upgrade now
+                    </Button>
+                  </span>
+                )}
               </DialogDescription>
             </DialogHeader>
 
@@ -172,7 +364,7 @@ export function BlogCreationModal({
                 <Label htmlFor="ai-description">Blog Post Description</Label>
                 <Textarea
                   id="ai-description"
-                  placeholder="Example: Write a comprehensive guide about sustainable living practices, including tips for reducing waste, energy conservation, and eco-friendly lifestyle changes. Target audience should be beginners who want to make a positive environmental impact."
+                  placeholder="Example: Write a comprehensive guide about sustainable living practices, including tips for reducing waste, energy conservation, and eco-friendly lifestyle changes. Target audience should be beginners who want to make a positive environmental impact. Make it around 500 words."
                   value={aiDescription}
                   onChange={(e) => setAiDescription(e.target.value)}
                   className="min-h-[120px] resize-none"
@@ -180,7 +372,8 @@ export function BlogCreationModal({
                 />
                 <p className="text-xs text-muted-foreground">
                   Be specific about the topic, target audience, and any key
-                  points you want covered.
+                  points you want covered. You can also specify word count
+                  (e.g., "500 words") - defaults to ~300 words.
                 </p>
               </div>
             </div>
@@ -203,12 +396,21 @@ export function BlogCreationModal({
                 </Button>
                 <Button
                   onClick={handleGenerateWithAI}
-                  disabled={isGenerating || !aiDescription.trim()}
+                  disabled={
+                    isGenerating ||
+                    !aiDescription.trim() ||
+                    !subscriptionUsage?.canGenerateAI
+                  }
                 >
                   {isGenerating ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Generating...
+                    </>
+                  ) : !subscriptionUsage?.canGenerateAI ? (
+                    <>
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Limit Reached
                     </>
                   ) : (
                     <>

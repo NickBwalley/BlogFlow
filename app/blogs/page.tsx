@@ -11,7 +11,7 @@ import { BlogPostCard } from "@/components/blog-post-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
@@ -242,12 +242,7 @@ export default function BlogsPage() {
                 {isAuthenticated && user ? (
                   <>
                     <div className="flex items-center gap-3 px-2 py-2 group-data-[collapsible=icon]:justify-center">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.user_metadata?.avatar_url} />
-                        <AvatarFallback>
-                          {getUserInitials(user.email)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar user={user} size="md" />
                       <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
                         <p className="text-sm font-medium truncate">
                           {user.user_metadata?.full_name ||

@@ -119,6 +119,8 @@ export type Database = {
           email: string;
           first_name: string | null;
           id: string;
+          subscription_status: string | null;
+          subscription_tier: string | null;
           updated_at: string;
           user_id: string;
         };
@@ -128,6 +130,8 @@ export type Database = {
           email: string;
           first_name?: string | null;
           id?: string;
+          subscription_status?: string | null;
+          subscription_tier?: string | null;
           updated_at?: string;
           user_id: string;
         };
@@ -137,6 +141,56 @@ export type Database = {
           email?: string;
           first_name?: string | null;
           id?: string;
+          subscription_status?: string | null;
+          subscription_tier?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      subscriptions: {
+        Row: {
+          ai_posts_limit: number;
+          ai_posts_used: number;
+          cancel_at_period_end: boolean;
+          created_at: string;
+          current_period_end: string;
+          current_period_start: string;
+          id: string;
+          plan_type: string;
+          status: string;
+          trial_end: string | null;
+          trial_start: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          ai_posts_limit?: number;
+          ai_posts_used?: number;
+          cancel_at_period_end?: boolean;
+          created_at?: string;
+          current_period_end?: string;
+          current_period_start?: string;
+          id?: string;
+          plan_type: string;
+          status?: string;
+          trial_end?: string | null;
+          trial_start?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          ai_posts_limit?: number;
+          ai_posts_used?: number;
+          cancel_at_period_end?: boolean;
+          created_at?: string;
+          current_period_end?: string;
+          current_period_start?: string;
+          id?: string;
+          plan_type?: string;
+          status?: string;
+          trial_end?: string | null;
+          trial_start?: string | null;
           updated_at?: string;
           user_id?: string;
         };
