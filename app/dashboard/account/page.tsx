@@ -55,7 +55,7 @@ export default function AccountPage() {
   const [firstName, setFirstName] = useState("");
 
   // Password change
-  const [currentPassword, setCurrentPassword] = useState("");
+  // const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPasswords, setShowPasswords] = useState(false);
@@ -150,7 +150,7 @@ export default function AccountPage() {
         toast.error(error.message);
       } else {
         toast.success("Password updated successfully!");
-        setCurrentPassword("");
+        // setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       }
@@ -160,17 +160,17 @@ export default function AccountPage() {
     }
   };
 
-  const handleDeleteAccount = () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
-      )
-    ) {
-      // In a real app, this would delete the account
-      console.log("Account deletion requested");
-      toast.info("Account deletion feature coming soon");
-    }
-  };
+  // const handleDeleteAccount = () => {
+  //   if (
+  //     confirm(
+  //       "Are you sure you want to delete your account? This action cannot be undone."
+  //     )
+  //   ) {
+  //     // In a real app, this would delete the account
+  //     console.log("Account deletion requested");
+  //     toast.info("Account deletion feature coming soon");
+  //   }
+  // };
 
   const profileContext = useProfile();
 
@@ -306,7 +306,8 @@ export default function AccountPage() {
               </div>
               <div className="text-center p-3 bg-white rounded-lg border">
                 <div className="text-2xl font-bold text-purple-600">
-                  {subscriptionUsage.remainingPosts}
+                  {subscriptionUsage.aiPostsLimit -
+                    subscriptionUsage.aiPostsUsed}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Remaining Posts
@@ -330,7 +331,10 @@ export default function AccountPage() {
           <ProfilePhotoUpload
             userId={user.id}
             currentAvatarUrl={getAvatarUrl(profile.avatar_url)}
-            userInitials={getUserInitials(profile.email, profile.first_name)}
+            userInitials={getUserInitials(
+              profile.email,
+              profile.first_name || undefined
+            )}
             onAvatarUpdate={handleAvatarUpdate}
           />
 

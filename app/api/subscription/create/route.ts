@@ -16,7 +16,7 @@ const createSubscriptionSchema = z.object({
 
 export async function POST(request: NextRequest) {
   // Apply rate limiting for subscription endpoints
-  const rateLimitCheck = await checkAPIRateLimit(request, "api-user");
+  const rateLimitCheck = await checkAPIRateLimit(request, "apiUser");
   if (!rateLimitCheck.allowed) {
     return rateLimitCheck.response!;
   }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid input data", details: error.errors },
+        { error: "Invalid input data", details: error.issues },
         { status: 400 }
       );
     }

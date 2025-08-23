@@ -18,6 +18,7 @@ interface DebugInfo {
     email: string;
     role: string;
     subscription_status?: string;
+    created_at?: string;
   } | null;
   error: string | null;
   timestamp: string;
@@ -29,7 +30,12 @@ export default function AdminDebugPage() {
   const [clientDebug, setClientDebug] = useState<{
     user?: { id: string; email?: string } | null;
     userError?: { message: string; code?: string; details?: string } | null;
-    clientProfile?: { id: string; user_id: string; email: string } | null;
+    clientProfile?: {
+      id: string;
+      user_id: string;
+      email: string;
+      role: string;
+    } | null;
     profileError?: { message: string; code?: string; details?: string } | null;
     browserInfo: Record<string, unknown>;
     sessionInfo: Record<string, unknown>;
@@ -71,6 +77,19 @@ export default function AdminDebugPage() {
                 details: profileError.details,
               }
             : null,
+          browserInfo: {
+            userAgent:
+              typeof window !== "undefined"
+                ? window.navigator.userAgent
+                : "N/A",
+            url: typeof window !== "undefined" ? window.location.href : "N/A",
+            timestamp: new Date().toISOString(),
+          },
+          sessionInfo: {
+            hasSession: !!user,
+            userId: user?.id || null,
+            sessionTimestamp: new Date().toISOString(),
+          },
         });
       } catch (error) {
         setDebugInfo({

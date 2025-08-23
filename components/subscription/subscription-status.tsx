@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+// import { Card, CardContent } from "@/components/ui/card";
 import { Crown, Zap, Check } from "lucide-react";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription/config";
 import type { SubscriptionPlan } from "@/lib/subscription/config";

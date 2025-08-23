@@ -159,11 +159,11 @@ export default function BlogsPage() {
   };
 
   // Generate user initials for avatar fallback
-  const getUserInitials = (email?: string) => {
-    if (!email) return "U";
-    const name = email.split("@")[0];
-    return name.slice(0, 2).toUpperCase();
-  };
+  // const getUserInitials = (email?: string) => {
+  //   if (!email) return "U";
+  //   const name = email.split("@")[0];
+  //   return name.slice(0, 2).toUpperCase();
+  // };
 
   // Generate display name from email
   const getDisplayName = (email?: string) => {

@@ -12,7 +12,7 @@ import { handleApiError } from "@/lib/utils/rate-limit-toast";
  */
 export function RateLimitDemo() {
   const [loading, setLoading] = useState(false);
-  const { post, get } = useApiWithRateLimit();
+  const { post } = useApiWithRateLimit();
 
   // Method 1: Using the custom hook
   const testWithHook = async () => {
@@ -63,7 +63,7 @@ export function RateLimitDemo() {
     setLoading(true);
     try {
       // Make 10 rapid requests to trigger rate limit
-      const promises = Array.from({ length: 10 }, (_, i) =>
+      const promises = Array.from({ length: 10 }, () =>
         fetch("/api/subscription/usage").catch(() => null)
       );
 

@@ -22,7 +22,7 @@ export function createRateLimitMiddleware(type: RateLimitType) {
       let rateLimitType = type;
 
       // Determine identifier and rate limit type based on endpoint type
-      if (type === "api-user" || type === "admin") {
+      if (type === "apiUser" || type === "admin") {
         // For API and admin endpoints, try to get user ID
         const userId = await getUserIdFromRequest(request);
 
@@ -91,15 +91,14 @@ export function createRateLimitMiddleware(type: RateLimitType) {
 
 // Specific middleware instances for different endpoint types
 export const publicRateLimit = createRateLimitMiddleware("public");
-export const authLoginRateLimit = createRateLimitMiddleware("auth-login");
-export const authSignupRateLimit = createRateLimitMiddleware("auth-signup");
-export const authPasswordResetRateLimit = createRateLimitMiddleware(
-  "auth-password-reset"
-);
-export const apiUserRateLimit = createRateLimitMiddleware("api-user");
+export const authLoginRateLimit = createRateLimitMiddleware("authLogin");
+export const authSignupRateLimit = createRateLimitMiddleware("authSignup");
+export const authPasswordResetRateLimit =
+  createRateLimitMiddleware("authPasswordReset");
+export const apiUserRateLimit = createRateLimitMiddleware("apiUser");
 export const chatRateLimit = createRateLimitMiddleware("chat");
 export const blogGenerationRateLimit =
-  createRateLimitMiddleware("blog-generation");
+  createRateLimitMiddleware("blogGeneration");
 export const adminRateLimit = createRateLimitMiddleware("admin");
 
 // Helper function to determine which rate limiter to use based on path

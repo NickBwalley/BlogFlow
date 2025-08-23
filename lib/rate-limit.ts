@@ -146,8 +146,8 @@ export function getClientIP(request: NextRequest): string {
   if (realIP) return realIP;
   if (forwarded) return forwarded.split(",")[0].trim();
 
-  // Fallback to remote address or default
-  return request.ip || "127.0.0.1";
+  // Fallback to default when all headers are unavailable
+  return "127.0.0.1";
 }
 
 // Helper function to get user ID from request
@@ -199,7 +199,7 @@ export async function isAdminUser(userId: string): Promise<boolean> {
 export async function checkRateLimit(
   type: RateLimitType,
   identifier: string,
-  request?: NextRequest
+  _request?: NextRequest // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<{
   success: boolean;
   limit: number;
@@ -227,19 +227,19 @@ export async function checkRateLimit(
             : minuteResult;
         break;
 
-      case "auth-login":
+      case "authLogin":
         result = await rateLimiters.authLoginByIP.limit(identifier);
         break;
 
-      case "auth-signup":
+      case "authSignup":
         result = await rateLimiters.authSignupByIP.limit(identifier);
         break;
 
-      case "auth-password-reset":
+      case "authPasswordReset":
         result = await rateLimiters.authPasswordResetByIP.limit(identifier);
         break;
 
-      case "api-user":
+      case "apiUser":
         // Apply both hourly and minute-based limits for API endpoints
         const [apiHourlyResult, apiMinuteResult] = await Promise.all([
           rateLimiters.apiByUser.limit(identifier),
@@ -269,7 +269,7 @@ export async function checkRateLimit(
             : chatMinuteResult;
         break;
 
-      case "blog-generation":
+      case "blogGeneration":
         // Apply both hourly and minute-based limits for blog generation
         const [blogHourlyResult, blogMinuteResult] = await Promise.all([
           rateLimiters.blogGenerationByUserHourly.limit(identifier),

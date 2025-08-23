@@ -2,6 +2,7 @@ export const SUBSCRIPTION_PLANS = {
   free: {
     id: "free",
     name: "Free",
+    description: "Perfect for getting started with basic blogging needs",
     price: 0,
     priceFormatted: "$0",
     interval: "month",
@@ -17,6 +18,7 @@ export const SUBSCRIPTION_PLANS = {
   starter: {
     id: "starter",
     name: "Starter",
+    description: "Great for regular bloggers and content creators",
     price: 499, // in cents
     priceFormatted: "$4.99",
     interval: "month",
@@ -33,6 +35,7 @@ export const SUBSCRIPTION_PLANS = {
   pro: {
     id: "pro",
     name: "Pro",
+    description: "For professional bloggers and content teams",
     price: 1099, // in cents
     priceFormatted: "$10.99",
     interval: "month",

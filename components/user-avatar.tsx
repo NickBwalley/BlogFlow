@@ -60,7 +60,8 @@ export function UserAvatar({
           setLocalFirstName(profile.first_name);
         }
       } catch (error) {
-        console.error("Error fetching user profile:", error);
+        // eslint-disable-line @typescript-eslint/no-unused-vars
+        console.error("Error fetching user profile");
       } finally {
         setLoading(false);
       }
@@ -72,7 +73,7 @@ export function UserAvatar({
     } else {
       setLoading(false); // Context available, no need to fetch
     }
-  }, [user?.id]);
+  }, [user?.id, firstName, profileAvatarUrl]);
 
   const sizeClasses = {
     sm: "h-6 w-6",
@@ -87,7 +88,10 @@ export function UserAvatar({
   };
 
   const displayName = firstName || user.email?.split("@")[0] || "User";
-  const initials = getUserInitials(user.email, firstName);
+  const initials = getUserInitials(
+    user.email || undefined,
+    firstName || undefined
+  );
 
   if (loading) {
     return (

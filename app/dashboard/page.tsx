@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { BlogPostCard } from "@/components/blog-post-card";
 import { BlogCreationModal } from "@/components/blog/blog-creation-modal";
@@ -18,12 +18,12 @@ interface DashboardHomeProps {
 }
 
 function DashboardHome({
-  isModalOpen,
-  handleModalClose,
+  // isModalOpen,
+  // handleModalClose,
   handleOpenModal,
   refreshTrigger,
 }: DashboardHomeProps) {
-  const router = useRouter();
+  // const router = useRouter();
   const [blogs, setBlogs] = useState<BlogListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

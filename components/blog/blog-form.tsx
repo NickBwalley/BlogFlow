@@ -78,7 +78,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
         dropzoneProps.setErrors([]);
       }
     }
-  }, [blog?.id, mode]);
+  }, [blog?.id, mode, dropzoneProps, userId]);
 
   // Handle successful upload
   useEffect(() => {

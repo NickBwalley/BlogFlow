@@ -27,7 +27,7 @@ export default function AdminSetupPage() {
       try {
         const status = await checkAdminStatus();
         setAdminStatus(status);
-        setEmail(status.user.email);
+        setEmail(status.user.email || "");
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Failed to check status"

@@ -28,7 +28,7 @@ const BlogPostSchema = z.object({
 
 export async function POST(req: NextRequest) {
   // Apply blog generation specific rate limiting (5 generations per minute)
-  const rateLimitCheck = await checkAPIRateLimit(req, "blog-generation");
+  const rateLimitCheck = await checkAPIRateLimit(req, "blogGeneration");
   if (!rateLimitCheck.allowed) {
     return rateLimitCheck.response!;
   }

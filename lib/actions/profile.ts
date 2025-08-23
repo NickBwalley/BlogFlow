@@ -40,7 +40,7 @@ export async function updateUserProfile(
   userId: string,
   updates: {
     first_name?: string;
-    avatar_url?: string;
+    avatar_url?: string | null;
   }
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
@@ -144,7 +144,7 @@ export async function uploadProfileImage(
 
     // Return the full URL for immediate display
     const fullUrl = getAvatarUrl(filePath);
-    return { success: true, url: fullUrl };
+    return { success: true, url: fullUrl || undefined };
   } catch (error) {
     console.error("Error in uploadProfileImage:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -159,7 +159,7 @@ export async function deleteProfileImage(
   try {
     // Try to delete the avatar file from storage
     const filePath = `${userId}/avatar.jpg`;
-    const { error: deleteError } = await supabase.storage
+    const { error: _deleteError } = await supabase.storage // eslint-disable-line @typescript-eslint/no-unused-vars
       .from("user-avatars")
       .remove([filePath]);
 

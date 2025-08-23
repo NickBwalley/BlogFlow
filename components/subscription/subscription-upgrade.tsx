@@ -24,7 +24,7 @@ interface SubscriptionUpgradeProps {
 
 export function SubscriptionUpgrade({
   currentTier,
-  hasActiveSubscription,
+  // hasActiveSubscription,
 }: SubscriptionUpgradeProps) {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
     null

@@ -64,7 +64,7 @@ export function ProfileProvider({ children, user }: ProfileProviderProps) {
 
   useEffect(() => {
     fetchProfile();
-  }, [user?.id]);
+  }, [user?.id, fetchProfile]);
 
   const contextValue: ProfileContextType = {
     profile,

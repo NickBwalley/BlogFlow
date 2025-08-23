@@ -12,7 +12,7 @@ import {
 // Rate limit wrapper for API routes
 export async function withRateLimit(
   handler: (request: NextRequest) => Promise<NextResponse>,
-  rateLimitType: RateLimitType = "api-user"
+  rateLimitType: RateLimitType = "apiUser"
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
     try {
@@ -25,7 +25,7 @@ export async function withRateLimit(
       let actualRateLimitType = rateLimitType;
 
       // Determine identifier based on rate limit type
-      if (rateLimitType === "api-user" || rateLimitType === "admin") {
+      if (rateLimitType === "apiUser" || rateLimitType === "admin") {
         const userId = await getUserIdFromRequest(request);
 
         if (userId) {
@@ -97,12 +97,12 @@ export const withPublicRateLimit = (
 
 export const withAuthRateLimit = (
   handler: (request: NextRequest) => Promise<NextResponse>,
-  type: "auth-login" | "auth-signup" | "auth-password-reset" = "auth-login"
+  type: "authLogin" | "authSignup" | "authPasswordReset" = "authLogin"
 ) => withRateLimit(handler, type);
 
 export const withApiRateLimit = (
   handler: (request: NextRequest) => Promise<NextResponse>
-) => withRateLimit(handler, "api-user");
+) => withRateLimit(handler, "apiUser");
 
 export const withAdminRateLimit = (
   handler: (request: NextRequest) => Promise<NextResponse>
@@ -114,12 +114,12 @@ export const withChatRateLimit = (
 
 export const withBlogGenerationRateLimit = (
   handler: (request: NextRequest) => Promise<NextResponse>
-) => withRateLimit(handler, "blog-generation");
+) => withRateLimit(handler, "blogGeneration");
 
 // Manual rate limit check for use within route handlers
 export async function checkAPIRateLimit(
   request: NextRequest,
-  rateLimitType: RateLimitType = "api-user"
+  rateLimitType: RateLimitType = "apiUser"
 ): Promise<{
   allowed: boolean;
   response?: NextResponse;
@@ -133,7 +133,7 @@ export async function checkAPIRateLimit(
     let identifier: string;
     let actualRateLimitType = rateLimitType;
 
-    if (rateLimitType === "api-user" || rateLimitType === "admin") {
+    if (rateLimitType === "apiUser" || rateLimitType === "admin") {
       const userId = await getUserIdFromRequest(request);
 
       if (userId) {

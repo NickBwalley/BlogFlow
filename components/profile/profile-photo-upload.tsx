@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadProfileImage, deleteProfileImage } from "@/lib/actions/profile";
-import { validateAvatarFile, formatFileSize } from "@/lib/utils/avatar-utils";
+import { validateAvatarFile } from "@/lib/utils/avatar-utils";
 
 interface ProfilePhotoUploadProps {
   userId: string;
@@ -32,7 +32,7 @@ export function ProfilePhotoUpload({
     if (!file) return;
 
     // Client-side validation before upload
-    const validation = validateAvatarFile(file);
+    const validation = await validateAvatarFile(file);
     if (!validation.valid) {
       toast.error(validation.error);
       // Reset file input
@@ -106,14 +106,14 @@ export function ProfilePhotoUpload({
     event.preventDefault();
   };
 
-  const handleDrop = (event: React.DragEvent) => {
+  const handleDrop = async (event: React.DragEvent) => {
     event.preventDefault();
     const files = event.dataTransfer.files;
     if (files.length > 0) {
       const file = files[0];
 
       // Validate the dropped file
-      const validation = validateAvatarFile(file);
+      const validation = await validateAvatarFile(file);
       if (!validation.valid) {
         toast.error(validation.error);
         return;
@@ -122,7 +122,7 @@ export function ProfilePhotoUpload({
       // Create a mock input event and trigger upload
       const mockEvent = {
         target: { files: [file] },
-      } as React.ChangeEvent<HTMLInputElement>;
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
 
       handleFileUpload(mockEvent);
     }

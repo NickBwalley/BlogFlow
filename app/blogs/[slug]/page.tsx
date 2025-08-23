@@ -19,7 +19,7 @@ export default function BlogSlugPage() {
   const slug = params.slug as string;
   const [blog, setBlog] = useState<Blog | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function BlogSlugPage() {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
-      setIsAuthenticated(!!user);
+      // setIsAuthenticated(!!user);
     };
 
     getUser();
@@ -58,10 +58,10 @@ export default function BlogSlugPage() {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         setUser(null);
-        setIsAuthenticated(false);
+        // setIsAuthenticated(false);
       } else if (session?.user) {
         setUser(session.user);
-        setIsAuthenticated(true);
+        // setIsAuthenticated(true);
       }
     });
 

@@ -38,6 +38,7 @@ export default function PricingPage() {
     plan: string;
     aiPostsUsed: number;
     aiPostsLimit: number;
+    remainingPosts: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { triggerRefresh } = useSubscriptionRefresh();
@@ -160,7 +161,7 @@ export default function PricingPage() {
                       ? "free"
                       : subscription?.status || "active"}
                   </Badge>
-                  {hasActiveSubscription && usage.isTrialActive && (
+                  {hasActiveSubscription && (usage as { isTrialActive?: boolean }).isTrialActive && (
                     <Badge
                       variant="outline"
                       className="border-green-500 text-green-700"
@@ -176,16 +177,16 @@ export default function PricingPage() {
                 ) : (
                   <>
                     <p className="text-muted-foreground">
-                      {subscription?.cancel_at_period_end
+                      {(subscription as { cancel_at_period_end?: boolean })?.cancel_at_period_end
                         ? "Cancels at the end of billing period"
                         : "Renews automatically"}
                     </p>
                     {hasActiveSubscription &&
-                      usage.isTrialActive &&
-                      usage.trialEndsAt && (
+                      (usage as { isTrialActive?: boolean }).isTrialActive &&
+                      (usage as { trialEndsAt?: string }).trialEndsAt && (
                         <p className="text-sm text-green-600 font-medium">
                           Trial ends:{" "}
-                          {new Date(usage.trialEndsAt).toLocaleDateString()}
+                          {new Date((usage as unknown as { trialEndsAt: string }).trialEndsAt).toLocaleDateString()}
                         </p>
                       )}
                   </>
@@ -194,7 +195,7 @@ export default function PricingPage() {
 
               <div className="text-right space-y-2">
                 <div className="text-3xl font-bold">
-                  {SUBSCRIPTION_PLANS[usage.plan]?.priceFormatted || "$0"}
+                  {SUBSCRIPTION_PLANS[usage.plan as keyof typeof SUBSCRIPTION_PLANS]?.priceFormatted || "$0"}
                   <span className="text-lg font-normal text-muted-foreground">
                     {usage.plan === "free" ? "" : "/month"}
                   </span>
@@ -204,7 +205,7 @@ export default function PricingPage() {
                     <CalendarDays className="h-4 w-4" />
                     <span>
                       Next billing:{" "}
-                      {new Date(
+                      {subscription.current_period_end && new Date(
                         subscription.current_period_end
                       ).toLocaleDateString()}
                     </span>
@@ -236,7 +237,7 @@ export default function PricingPage() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {usage.remainingPosts} posts remaining
+                    {usage.aiPostsLimit - usage.aiPostsUsed} posts remaining
                   </p>
                 </div>
               </div>
@@ -244,7 +245,7 @@ export default function PricingPage() {
               <div>
                 <h4 className="font-semibold mb-2">Plan Benefits</h4>
                 <ul className="text-sm space-y-1">
-                  {SUBSCRIPTION_PLANS[usage.plan]?.features
+                  {SUBSCRIPTION_PLANS[usage.plan as keyof typeof SUBSCRIPTION_PLANS]?.features
                     .slice(0, 3)
                     .map((feature, index) => (
                       <li key={index} className="flex items-center gap-2">
@@ -276,7 +277,7 @@ export default function PricingPage() {
                   Upgrade to Paid Plan
                 </Button>
               ) : hasActiveSubscription && subscription ? (
-                subscription.cancel_at_period_end ? (
+                (subscription as { cancel_at_period_end?: boolean }).cancel_at_period_end ? (
                   <Button
                     onClick={async () => {
                       const response = await fetch(
@@ -331,7 +332,7 @@ export default function PricingPage() {
             {/* Paid Plan Cancellation Notice */}
             {usage.plan !== "free" &&
               hasActiveSubscription &&
-              subscription?.cancel_at_period_end && (
+              (subscription as { cancel_at_period_end?: boolean })?.cancel_at_period_end && (
                 <div className="flex items-start gap-2 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5" />
                   <div className="text-sm">
@@ -341,7 +342,7 @@ export default function PricingPage() {
                     <p className="text-orange-700">
                       You&apos;ll retain access to your {usage.plan} plan
                       features until{" "}
-                      {new Date(
+                      {subscription.current_period_end && new Date(
                         subscription.current_period_end
                       ).toLocaleDateString()}
                       .
@@ -357,8 +358,8 @@ export default function PricingPage() {
       {usage && (
         <div data-section="pricing-plans">
           <PricingPlans
-            currentPlan={usage.plan}
-            hasActiveSubscription={hasActiveSubscription}
+            currentPlan={usage.plan as "free" | "starter" | "pro"}
+            hasActiveSubscription={hasActiveSubscription || false}
             usage={usage}
             onPaymentSuccess={handlePaymentSuccess}
           />

@@ -11,7 +11,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import { saveMessage } from "@/lib/actions/chat";
-import { handleApiError } from "@/lib/utils/rate-limit-toast";
+// import { handleApiError } from "@/lib/utils/rate-limit-toast";
 import type { Message as MessageType } from "@/types";
 
 interface ChatInterfaceProps {
@@ -25,22 +25,29 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [allMessages, setAllMessages] = useState(initialMessages);
 
-  const { messages, sendMessage, isLoading, error } = useChat({
-    initialMessages: initialMessages.map((msg) => ({
-      id: msg.id,
-      role: msg.role as "user" | "assistant",
-      content: msg.content,
-    })),
-    api: "/api/chat",
+  const { messages: chatMessages, sendMessage } = useChat({
     onFinish: async (message) => {
+      setIsLoading(false);
       // Save the assistant's message to database when response is complete
       if (chatId) {
         try {
+          // Convert message to string content
+          const content =
+            typeof message === "string"
+              ? message
+              : ((message as unknown as Record<string, unknown>)
+                  .content as string) ||
+                ((message as unknown as Record<string, unknown>)
+                  .text as string) ||
+                JSON.stringify(message);
+
           await saveMessage({
             chat_id: chatId,
             role: "assistant",
-            content: message.content,
+            content,
           });
         } catch (error) {
           console.error("Error saving assistant message to database:", error);
@@ -48,6 +55,7 @@ export function ChatInterface({
       }
     },
     onError: async (error) => {
+      setIsLoading(false);
       console.error("Chat API error:", error);
 
       try {
@@ -84,7 +92,7 @@ export function ChatInterface({
             duration: 5000,
           });
         }
-      } catch (parseError) {
+      } catch {
         // Fallback if JSON parsing fails
         if (
           error.message.includes("429") ||
@@ -106,6 +114,22 @@ export function ChatInterface({
     },
   });
 
+  // Merge chat messages with initial messages
+  useEffect(() => {
+    // Convert AI SDK messages to our message format
+    const convertedChatMessages = chatMessages.map((msg) => ({
+      id: msg.id,
+      chat_id: chatId || "",
+      role: msg.role as "user" | "assistant",
+      content:
+        ((msg as unknown as Record<string, unknown>).content as string) ||
+        JSON.stringify(msg),
+      created_at: new Date().toISOString(),
+    }));
+
+    setAllMessages([...initialMessages, ...convertedChatMessages]);
+  }, [chatMessages, initialMessages, chatId]);
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -116,7 +140,7 @@ export function ChatInterface({
         scrollElement.scrollTop = scrollElement.scrollHeight;
       }
     }
-  }, [messages]);
+  }, [allMessages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,6 +163,7 @@ export function ChatInterface({
     }
 
     // Send message to AI - assistant response will be saved in onFinish
+    setIsLoading(true);
     sendMessage({ text: userMessage });
   };
 
@@ -154,7 +179,7 @@ export function ChatInterface({
       {/* Messages */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
         <div className="space-y-4 max-w-4xl mx-auto">
-          {messages.length === 0 ? (
+          {allMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Bot className="w-8 h-8 text-primary" />
@@ -168,7 +193,7 @@ export function ChatInterface({
               </p>
             </div>
           ) : (
-            messages.map((message) => (
+            allMessages.map((message) => (
               <div
                 key={message.id}
                 className={`flex gap-3 ${
@@ -190,25 +215,17 @@ export function ChatInterface({
                       : "bg-muted"
                   }`}
                 >
-                  {message.parts.map((part, i) => {
-                    if (part.type === "text") {
-                      return message.role === "user" ? (
-                        <p key={i} className="whitespace-pre-wrap break-words">
-                          {part.text}
-                        </p>
-                      ) : (
-                        <div
-                          key={i}
-                          className="prose prose-sm max-w-none dark:prose-invert"
-                        >
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {part.text}
-                          </ReactMarkdown>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
+                  {message.role === "user" ? (
+                    <p className="whitespace-pre-wrap break-words">
+                      {message.content}
+                    </p>
+                  ) : (
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
 
                 {message.role === "user" && (

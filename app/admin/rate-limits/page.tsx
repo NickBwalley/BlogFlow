@@ -27,6 +27,19 @@ export default function AdminRateLimitsPage() {
     remaining: number;
     reset: number;
     total: number;
+    loading?: boolean;
+    error?: string;
+    ip?: string;
+    publicLimit?: {
+      remaining: number;
+      limit: number;
+      resetTime: string;
+    };
+    apiLimit?: {
+      remaining: number;
+      limit: number;
+      resetTime: string;
+    };
   } | null>(null);
 
   useEffect(() => {
@@ -121,7 +134,13 @@ export default function AdminRateLimitsPage() {
 
   const handleTestRateLimit = async () => {
     try {
-      setTestResults({ loading: true });
+      setTestResults({
+        success: false,
+        remaining: 0,
+        reset: 0,
+        total: 0,
+        loading: true,
+      });
 
       // This would be a test endpoint to check rate limits
       // For now, we'll just show a placeholder
@@ -140,10 +159,24 @@ export default function AdminRateLimitsPage() {
       };
 
       setTimeout(() => {
-        setTestResults(mockResult);
+        setTestResults({
+          success: true,
+          remaining: mockResult.publicLimit.remaining,
+          reset: Date.now() + 3600000, // 1 hour from now
+          total: mockResult.publicLimit.limit,
+          ip: mockResult.ip,
+          publicLimit: mockResult.publicLimit,
+          apiLimit: mockResult.apiLimit,
+        });
       }, 1000);
-    } catch {
-      setTestResults(null);
+    } catch (error) {
+      setTestResults({
+        success: false,
+        remaining: 0,
+        reset: 0,
+        total: 0,
+        error: error instanceof Error ? error.message : "Test failed",
+      });
     }
   };
 
@@ -312,27 +345,29 @@ export default function AdminRateLimitsPage() {
                     <div>
                       <strong>Public Endpoints:</strong>
                       <br />
-                      {testResults.publicLimit.remaining}/
-                      {testResults.publicLimit.limit} remaining
+                      {testResults.publicLimit?.remaining}/
+                      {testResults.publicLimit?.limit} remaining
                       <br />
                       <span className="text-muted-foreground">
                         Resets:{" "}
-                        {new Date(
-                          testResults.publicLimit.resetTime
-                        ).toLocaleTimeString()}
+                        {testResults.publicLimit?.resetTime &&
+                          new Date(
+                            testResults.publicLimit.resetTime
+                          ).toLocaleTimeString()}
                       </span>
                     </div>
                     <div>
                       <strong>API Endpoints:</strong>
                       <br />
-                      {testResults.apiLimit.remaining}/
-                      {testResults.apiLimit.limit} remaining
+                      {testResults.apiLimit?.remaining}/
+                      {testResults.apiLimit?.limit} remaining
                       <br />
                       <span className="text-muted-foreground">
                         Resets:{" "}
-                        {new Date(
-                          testResults.apiLimit.resetTime
-                        ).toLocaleTimeString()}
+                        {testResults.apiLimit?.resetTime &&
+                          new Date(
+                            testResults.apiLimit.resetTime
+                          ).toLocaleTimeString()}
                       </span>
                     </div>
                   </div>
