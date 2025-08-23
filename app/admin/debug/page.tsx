@@ -27,6 +27,10 @@ export default function AdminDebugPage() {
   const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [clientDebug, setClientDebug] = useState<{
+    user?: { id: string; email?: string } | null;
+    userError?: { message: string; code?: string; details?: string } | null;
+    clientProfile?: { id: string; user_id: string; email: string } | null;
+    profileError?: { message: string; code?: string; details?: string } | null;
     browserInfo: Record<string, unknown>;
     sessionInfo: Record<string, unknown>;
   } | null>(null);

@@ -17,7 +17,7 @@ import {
 } from "@react-email/components";
 import { WelcomeEmailProps } from "@/types";
 
-interface WelcomeEmailComponentProps extends WelcomeEmailProps {}
+type WelcomeEmailComponentProps = WelcomeEmailProps;
 
 /**
  * Welcome email component sent to new users after successful registration
@@ -68,10 +68,10 @@ const WelcomeEmail = ({
               </Text>
 
               <Text className="text-[16px] text-gray-700 mb-[24px] leading-relaxed">
-                Welcome to BlogFlow, your new modern blogging platform! We're
-                excited to have you join our community of writers and creators.
-                Your account is now ready, and you have access to all the
-                powerful features designed to help you write, manage, and
+                Welcome to BlogFlow, your new modern blogging platform!
+                We&apos;re excited to have you join our community of writers and
+                creators. Your account is now ready, and you have access to all
+                the powerful features designed to help you write, manage, and
                 publish amazing content.
               </Text>
 
@@ -120,7 +120,7 @@ const WelcomeEmail = ({
                 <Link href={guideUrl} className="text-blue-600 underline">
                   quick start guide
                 </Link>{" "}
-                or reach out to our support team - we're here to help you
+                or reach out to our support team - we&apos;re here to help you
                 succeed!
               </Text>
 

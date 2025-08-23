@@ -21,8 +21,8 @@ describe("Word Count Utilities", () => {
     it("should handle empty or invalid input", () => {
       expect(countWords("")).toBe(0);
       expect(countWords("   ")).toBe(0);
-      expect(countWords(null as any)).toBe(0);
-      expect(countWords(undefined as any)).toBe(0);
+      expect(countWords(null as unknown as string)).toBe(0);
+      expect(countWords(undefined as unknown as string)).toBe(0);
     });
   });
 

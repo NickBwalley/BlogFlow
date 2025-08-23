@@ -115,7 +115,7 @@ export async function SubscriptionGuard({
         </div>
         <CardTitle>AI Posts Limit Reached</CardTitle>
         <CardDescription>
-          You've used all {usage.aiPostsLimit} AI posts for this month
+          You&apos;ve used all {usage.aiPostsLimit} AI posts for this month
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

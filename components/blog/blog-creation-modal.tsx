@@ -374,7 +374,7 @@ export function BlogCreationModal({
                 <p className="text-xs text-muted-foreground">
                   Be specific about the topic, target audience, and any key
                   points you want covered. You can also specify word count
-                  (e.g., "500 words") - defaults to ~300 words.
+                  (e.g., &quot;500 words&quot;) - defaults to ~300 words.
                 </p>
               </div>
             </div>

@@ -174,23 +174,25 @@ export async function createSubscription(
     const now = new Date();
     const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
 
-    let subscriptionData: any = {
+    const subscriptionData = {
       user_id: userId,
       plan_type: planType,
-      status: "active",
+      status: "active" as const,
       current_period_start: now.toISOString(),
       current_period_end: periodEnd.toISOString(),
       ai_posts_used: 0,
       ai_posts_limit: planConfig.aiPostsLimit,
       cancel_at_period_end: false,
+      // Add trial period for paid plans
+      ...(planType !== "free"
+        ? {
+            trial_start: now.toISOString(),
+            trial_end: new Date(
+              now.getTime() + 30 * 24 * 60 * 60 * 1000
+            ).toISOString(),
+          }
+        : {}),
     };
-
-    // Add trial period for paid plans
-    if (planType !== "free") {
-      const trialEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days trial
-      subscriptionData.trial_start = now.toISOString();
-      subscriptionData.trial_end = trialEnd.toISOString();
-    }
 
     if (existingSubscription) {
       // Update existing subscription

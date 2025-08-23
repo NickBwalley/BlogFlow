@@ -69,7 +69,7 @@ export function SubscriptionUpgrade({
             <CardTitle>Subscription Plan</CardTitle>
           </div>
           <CardDescription>
-            You're on our highest tier. Enjoy all premium features!
+            You&apos;re on our highest tier. Enjoy all premium features!
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -178,7 +178,7 @@ export function SubscriptionUpgrade({
             </div>
 
             <div className="space-y-2 mb-4">
-              <h6 className="font-medium text-sm">What you'll get:</h6>
+              <h6 className="font-medium text-sm">What you&apos;ll get:</h6>
               <ul className="space-y-1">
                 {nextPlan.features.map((feature, index) => (
                   <li key={index} className="flex items-center gap-2 text-sm">

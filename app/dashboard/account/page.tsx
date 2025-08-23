@@ -38,8 +38,16 @@ import type { User } from "@supabase/supabase-js";
 export default function AccountPage() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [subscription, setSubscription] = useState<any>(null);
-  const [subscriptionUsage, setSubscriptionUsage] = useState<any>(null);
+  const [subscription, setSubscription] = useState<{
+    plan_type: string;
+    status: string;
+    current_period_end?: string;
+  } | null>(null);
+  const [subscriptionUsage, setSubscriptionUsage] = useState<{
+    plan: string;
+    aiPostsUsed: number;
+    aiPostsLimit: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 

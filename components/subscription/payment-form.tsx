@@ -171,7 +171,7 @@ export function PaymentForm({
 
             <div className="border-t pt-4">
               <div className="flex justify-between items-center font-bold">
-                <span>Today's Total</span>
+                <span>Today&apos;s Total</span>
                 <span className="text-green-600">$0.00</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -180,7 +180,9 @@ export function PaymentForm({
             </div>
 
             <div className="bg-blue-50 p-3 rounded-lg">
-              <h4 className="font-medium text-sm mb-2">What you'll get:</h4>
+              <h4 className="font-medium text-sm mb-2">
+                What you&apos;ll get:
+              </h4>
               <ul className="text-xs space-y-1">
                 {plan.features.map((feature, index) => (
                   <li key={index}>• {feature}</li>

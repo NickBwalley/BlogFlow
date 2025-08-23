@@ -29,8 +29,16 @@ import type { User } from "@supabase/supabase-js";
 
 export default function PricingPage() {
   const [user, setUser] = useState<User | null>(null);
-  const [subscription, setSubscription] = useState<any>(null);
-  const [usage, setUsage] = useState<any>(null);
+  const [subscription, setSubscription] = useState<{
+    plan_type: string;
+    status: string;
+    current_period_end?: string;
+  } | null>(null);
+  const [usage, setUsage] = useState<{
+    plan: string;
+    aiPostsUsed: number;
+    aiPostsLimit: number;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { triggerRefresh } = useSubscriptionRefresh();
 
@@ -331,8 +339,8 @@ export default function PricingPage() {
                       Subscription Cancelled
                     </p>
                     <p className="text-orange-700">
-                      You'll retain access to your {usage.plan} plan features
-                      until{" "}
+                      You&apos;ll retain access to your {usage.plan} plan
+                      features until{" "}
                       {new Date(
                         subscription.current_period_end
                       ).toLocaleDateString()}
@@ -371,9 +379,9 @@ export default function PricingPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                All paid plans include a 30-day free trial. You'll have full
-                access to all features during the trial period. No payment is
-                required upfront, and you can cancel anytime during the trial
+                All paid plans include a 30-day free trial. You&apos;ll have
+                full access to all features during the trial period. No payment
+                is required upfront, and you can cancel anytime during the trial
                 without being charged.
               </p>
             </CardContent>
@@ -389,8 +397,8 @@ export default function PricingPage() {
               <p className="text-muted-foreground">
                 Yes! You can upgrade your plan at any time and the changes take
                 effect immediately. If you downgrade, the change will take
-                effect at your next billing cycle, and you'll keep access to
-                your current plan's features until then.
+                effect at your next billing cycle, and you&apos;ll keep access
+                to your current plan&apos;s features until then.
               </p>
             </CardContent>
           </Card>

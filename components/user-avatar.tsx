@@ -66,12 +66,11 @@ export function UserAvatar({
       }
     };
 
-    // Only fetch if not using context
-    try {
-      useProfile();
-      setLoading(false); // Context available, no need to fetch
-    } catch {
+    // Fetch profile if not available from context
+    if (!profileAvatarUrl && !firstName) {
       fetchUserProfile(); // Context not available, fetch locally
+    } else {
+      setLoading(false); // Context available, no need to fetch
     }
   }, [user?.id]);
 
