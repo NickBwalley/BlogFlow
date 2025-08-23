@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,20 +68,24 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
     return markdownPatterns.some((pattern) => pattern.test(content));
   };
 
+  // Memoize the dropzone reset function to avoid dependency issues
+  const resetDropzone = useCallback(() => {
+    dropzoneProps.setFiles([]);
+    // Reset upload state
+    if (dropzoneProps.setErrors) {
+      dropzoneProps.setErrors([]);
+    }
+  }, [dropzoneProps.setFiles, dropzoneProps.setErrors]);
+
   // Reset dropzone when blog data changes (for edit mode)
   useEffect(() => {
     if (blog && mode === "edit") {
-      // Clear any existing files in dropzone when switching to edit mode
-      dropzoneProps.setFiles([]);
-      // Reset upload state
-      if (dropzoneProps.setErrors) {
-        dropzoneProps.setErrors([]);
-      }
+      resetDropzone();
     }
-  }, [blog?.id, blog, mode, dropzoneProps, userId]);
+  }, [blog?.id, mode, resetDropzone]);
 
-  // Handle successful upload
-  useEffect(() => {
+  // Memoize the upload success handler
+  const handleUploadSuccess = useCallback(() => {
     if (dropzoneProps.isSuccess && dropzoneProps.files.length > 0) {
       const uploadedFile = dropzoneProps.files[0];
       // The file gets uploaded with the original name in the user's folder
@@ -98,7 +102,17 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
         dropzoneProps.setFiles([]);
       }, 1000);
     }
-  }, [dropzoneProps.isSuccess, dropzoneProps.files, dropzoneProps, userId]);
+  }, [
+    dropzoneProps.isSuccess,
+    dropzoneProps.files,
+    dropzoneProps.setFiles,
+    userId,
+  ]);
+
+  // Handle successful upload
+  useEffect(() => {
+    handleUploadSuccess();
+  }, [handleUploadSuccess]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};

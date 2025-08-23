@@ -177,11 +177,23 @@ export async function isAdminUser(userId: string): Promise<boolean> {
     const { createClient } = await import("@/lib/server");
     const supabase = await createClient();
 
-    const { data: profile, error } = await supabase
+    // Add timeout to prevent hanging
+    const adminCheckPromise = supabase
       .from("profiles")
       .select("role")
       .eq("user_id", userId)
       .single();
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Admin check timeout")), 1000)
+    );
+
+    const result = (await Promise.race([
+      adminCheckPromise,
+      timeoutPromise,
+    ])) as { data: { role: string } | null; error: Error | null };
+
+    const { data: profile, error } = result;
 
     if (error) {
       console.error("Error checking admin status:", error);
@@ -191,7 +203,7 @@ export async function isAdminUser(userId: string): Promise<boolean> {
     return profile?.role === "admin";
   } catch (error) {
     console.error("Error checking admin status:", error);
-    return false;
+    return false; // Fail safe - treat as non-admin on error
   }
 }
 

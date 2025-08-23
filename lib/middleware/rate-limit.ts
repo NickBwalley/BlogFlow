@@ -18,68 +18,81 @@ export function createRateLimitMiddleware(type: RateLimitType) {
         return null; // Continue to next middleware
       }
 
-      let identifier: string;
-      let rateLimitType = type;
+      // Add timeout for rate limit check to prevent hanging
+      const rateLimitCheck = async () => {
+        let identifier: string;
+        let rateLimitType = type;
 
-      // Determine identifier and rate limit type based on endpoint type
-      if (type === "apiUser" || type === "admin") {
-        // For API and admin endpoints, try to get user ID
-        const userId = await getUserIdFromRequest(request);
+        // Determine identifier and rate limit type based on endpoint type
+        if (type === "apiUser" || type === "admin") {
+          // For API and admin endpoints, try to get user ID
+          const userId = await getUserIdFromRequest(request);
 
-        if (userId) {
-          identifier = userId;
+          if (userId) {
+            identifier = userId;
 
-          // Check if user is admin for admin endpoints
-          if (type === "admin" || (await isAdminUser(userId))) {
-            rateLimitType = "admin";
+            // Check if user is admin for admin endpoints
+            if (type === "admin" || (await isAdminUser(userId))) {
+              rateLimitType = "admin";
+            }
+          } else {
+            // Fall back to IP-based rate limiting if no user ID
+            identifier = getClientIP(request);
+            rateLimitType = "public";
           }
         } else {
-          // Fall back to IP-based rate limiting if no user ID
+          // For public and auth endpoints, use IP-based rate limiting
           identifier = getClientIP(request);
-          rateLimitType = "public";
         }
-      } else {
-        // For public and auth endpoints, use IP-based rate limiting
-        identifier = getClientIP(request);
-      }
 
-      // Check rate limit
-      const rateLimitResult = await checkRateLimit(
-        rateLimitType,
-        identifier,
-        request
+        // Check rate limit
+        const rateLimitResult = await checkRateLimit(
+          rateLimitType,
+          identifier,
+          request
+        );
+
+        // Create response headers
+        const headers = createRateLimitHeaders(rateLimitResult);
+
+        if (!rateLimitResult.success) {
+          // Rate limit exceeded - return 429 response
+          return new NextResponse(
+            JSON.stringify({
+              error: "Too Many Requests",
+              message: "Rate limit exceeded. Please try again later.",
+              retryAfter: rateLimitResult.retryAfter,
+            }),
+            {
+              status: 429,
+              headers: {
+                "Content-Type": "application/json",
+                ...headers,
+              },
+            }
+          );
+        }
+
+        // Rate limit passed - add headers and continue
+        const response = NextResponse.next();
+
+        // Add rate limit headers to response
+        Object.entries(headers).forEach(([key, value]) => {
+          response.headers.set(key, value);
+        });
+
+        return response;
+      };
+
+      // Apply timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Rate limit timeout")), 1500)
       );
 
-      // Create response headers
-      const headers = createRateLimitHeaders(rateLimitResult);
-
-      if (!rateLimitResult.success) {
-        // Rate limit exceeded - return 429 response
-        return new NextResponse(
-          JSON.stringify({
-            error: "Too Many Requests",
-            message: "Rate limit exceeded. Please try again later.",
-            retryAfter: rateLimitResult.retryAfter,
-          }),
-          {
-            status: 429,
-            headers: {
-              "Content-Type": "application/json",
-              ...headers,
-            },
-          }
-        );
-      }
-
-      // Rate limit passed - add headers and continue
-      const response = NextResponse.next();
-
-      // Add rate limit headers to response
-      Object.entries(headers).forEach(([key, value]) => {
-        response.headers.set(key, value);
-      });
-
-      return response;
+      return (await Promise.race([
+        rateLimitCheck(),
+        timeoutPromise,
+      ])) as NextResponse | null;
     } catch (error) {
       console.error("Rate limit middleware error:", error);
 

@@ -24,12 +24,23 @@ export default function BlogSlugPage() {
 
   useEffect(() => {
     const fetchBlog = async () => {
+      if (!slug) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const fetchedBlog = await getBlogBySlug(slug);
-        setBlog(fetchedBlog);
+        // Add timeout to prevent hanging
+        const fetchPromise = getBlogBySlug(slug);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Blog fetch timeout")), 10000)
+        );
+
+        const fetchedBlog = await Promise.race([fetchPromise, timeoutPromise]);
+        setBlog(fetchedBlog as Blog);
       } catch (error) {
         console.error("Failed to fetch blog:", error);
-        notFound();
+        setBlog(null); // Set to null instead of calling notFound() directly
       } finally {
         setIsLoading(false);
       }
