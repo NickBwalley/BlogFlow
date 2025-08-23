@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
 } from "react";
 import { createClient } from "@/lib/client";
@@ -34,7 +35,7 @@ interface ProfileProviderProps {
 export function ProfileProvider({ children, user }: ProfileProviderProps) {
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!user?.id) {
       setProfile(null);
       return;
@@ -54,7 +55,7 @@ export function ProfileProvider({ children, user }: ProfileProviderProps) {
     } catch (error) {
       console.error("Error fetching profile:", error);
     }
-  };
+  }, [user?.id]);
 
   const updateProfileAvatar = (newAvatarPath: string | null) => {
     if (profile) {

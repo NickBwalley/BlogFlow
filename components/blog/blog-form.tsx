@@ -78,7 +78,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
         dropzoneProps.setErrors([]);
       }
     }
-  }, [blog?.id, mode, dropzoneProps, userId]);
+  }, [blog?.id, blog, mode, dropzoneProps, userId]);
 
   // Handle successful upload
   useEffect(() => {
@@ -98,7 +98,7 @@ export function BlogForm({ blog, mode }: BlogFormProps) {
         dropzoneProps.setFiles([]);
       }, 1000);
     }
-  }, [dropzoneProps.isSuccess, dropzoneProps.files, userId]);
+  }, [dropzoneProps.isSuccess, dropzoneProps.files, dropzoneProps, userId]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};

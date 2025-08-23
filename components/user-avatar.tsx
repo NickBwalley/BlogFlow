@@ -36,7 +36,7 @@ export function UserAvatar({
       profileAvatarUrl = profileContext.avatarUrl;
       firstName = profileContext.profile.first_name;
     }
-  } catch (error) {
+  } catch {
     // Not inside ProfileProvider, use local state
   }
 
@@ -59,8 +59,7 @@ export function UserAvatar({
           setLocalProfileAvatarUrl(getAvatarUrl(profile.avatar_url));
           setLocalFirstName(profile.first_name);
         }
-      } catch (error) {
-        // eslint-disable-line @typescript-eslint/no-unused-vars
+      } catch {
         console.error("Error fetching user profile");
       } finally {
         setLoading(false);
