@@ -22,14 +22,19 @@ export default function AdminRateLimitsPage() {
     "connected" | "disconnected" | "testing"
   >("testing");
   const [testIP, setTestIP] = useState("192.168.1.1");
-  const [testResults, setTestResults] = useState<any>(null);
+  const [testResults, setTestResults] = useState<{
+    success: boolean;
+    remaining: number;
+    reset: number;
+    total: number;
+  } | null>(null);
 
   useEffect(() => {
     const checkRedisConnection = async () => {
       try {
         const isConnected = await testRedisConnection();
         setRedisStatus(isConnected ? "connected" : "disconnected");
-      } catch (error) {
+      } catch {
         setRedisStatus("disconnected");
       } finally {
         setIsLoading(false);
@@ -137,8 +142,8 @@ export default function AdminRateLimitsPage() {
       setTimeout(() => {
         setTestResults(mockResult);
       }, 1000);
-    } catch (error) {
-      setTestResults({ error: "Failed to test rate limits" });
+    } catch {
+      setTestResults(null);
     }
   };
 

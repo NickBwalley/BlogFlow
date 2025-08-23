@@ -19,13 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  FileText,
-  Sparkles,
-  Loader2,
-  AlertTriangle,
-  Crown,
-} from "lucide-react";
+import { FileText, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionRefresh } from "@/components/providers/subscription-refresh-provider";
 import { handleApiError } from "@/lib/utils/rate-limit-toast";

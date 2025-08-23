@@ -7,8 +7,18 @@ import { getCurrentUserProfile } from "@/lib/actions/admin";
 import { createClient } from "@/lib/client";
 
 interface DebugInfo {
-  authUser: any;
-  profile: any;
+  authUser: {
+    id: string;
+    email?: string;
+    user_metadata?: Record<string, unknown>;
+  } | null;
+  profile: {
+    id: string;
+    user_id: string;
+    email: string;
+    role: string;
+    subscription_status?: string;
+  } | null;
   error: string | null;
   timestamp: string;
 }
@@ -16,7 +26,10 @@ interface DebugInfo {
 export default function AdminDebugPage() {
   const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [clientDebug, setClientDebug] = useState<any>(null);
+  const [clientDebug, setClientDebug] = useState<{
+    browserInfo: Record<string, unknown>;
+    sessionInfo: Record<string, unknown>;
+  } | null>(null);
 
   useEffect(() => {
     const runDebug = async () => {

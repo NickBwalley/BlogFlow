@@ -15,7 +15,7 @@ interface AnalyticsData {
 interface AnalyticsCardProps {
   title: string;
   value: number;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   description?: string;
 }
 
@@ -71,7 +71,7 @@ export default function AdminHomePage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
           <p className="text-muted-foreground">
-            Overview of your platform's performance and metrics.
+            Overview of your platform&apos;s performance and metrics.
           </p>
         </div>
 
@@ -99,7 +99,7 @@ export default function AdminHomePage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <p className="text-muted-foreground">
-          Overview of your platform's performance and metrics.
+          Overview of your platform&apos;s performance and metrics.
         </p>
       </div>
 

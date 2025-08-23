@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+
 import { BlogDetail } from "@/components/blog/blog-detail";
 import { getBlogBySlug } from "@/lib/actions/blog";
 import { notFound } from "next/navigation";

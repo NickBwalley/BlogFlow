@@ -15,7 +15,11 @@ export default function AdminSetupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [adminStatus, setAdminStatus] = useState<any>(null);
+  const [adminStatus, setAdminStatus] = useState<{
+    user: { id: string; email: string | undefined };
+    isAdmin: boolean;
+    canAccessAdmin: boolean;
+  } | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
 
   useEffect(() => {
@@ -187,13 +191,13 @@ export default function AdminSetupPage() {
         <CardContent className="space-y-3">
           <p className="text-sm">
             <strong>Role-based Admin:</strong> Your profile role is set to
-            'admin' in the profiles table, giving you full access to admin
-            features.
+            &apos;admin&apos; in the profiles table, giving you full access to
+            admin features.
           </p>
           <p className="text-sm">
             <strong>Default Role:</strong> New user registrations automatically
-            get the 'user' role. Only existing admins can promote other users to
-            admin.
+            get the &apos;user&apos; role. Only existing admins can promote
+            other users to admin.
           </p>
           <p className="text-sm">
             <strong>Bootstrap Admin:</strong> If no admins exist yet, any user
