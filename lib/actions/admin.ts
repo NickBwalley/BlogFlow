@@ -253,8 +253,8 @@ export async function getCurrentUserProfile() {
   };
 }
 
-// Bootstrap function to promote the current user to admin (when no admins exist yet)
-export async function promoteToAdmin() {
+// Secure function to seed the first admin (requires admin seed key)
+export async function seedFirstAdmin(adminSeedKey: string) {
   const supabase = await createClient();
 
   const {
@@ -266,13 +266,32 @@ export async function promoteToAdmin() {
     throw new Error(`Authentication error: ${userError?.message || "No user"}`);
   }
 
-  // Use the database function to promote user to admin
-  const { data, error } = await supabase.rpc("promote_user_to_admin", {
+  // Use the secure database function to seed first admin
+  const { data, error } = await supabase.rpc("seed_first_admin", {
     target_user_id: user.id,
+    admin_seed_key: adminSeedKey,
   });
 
   if (error) {
-    throw new Error(`Failed to promote to admin: ${error.message}`);
+    throw new Error(`Failed to seed admin: ${error.message}`);
+  }
+
+  return { success: true, message: data };
+}
+
+// Function to promote a user to admin (only callable by existing admins)
+export async function promoteUserToAdmin(targetUserId: string) {
+  await checkAdminAccess();
+
+  const supabase = await createClient();
+
+  // Use the database function to promote user to admin
+  const { data, error } = await supabase.rpc("promote_user_to_admin", {
+    target_user_id: targetUserId,
+  });
+
+  if (error) {
+    throw new Error(`Failed to promote user to admin: ${error.message}`);
   }
 
   return { success: true, message: data };

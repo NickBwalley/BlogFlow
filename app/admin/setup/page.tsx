@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { promoteToAdmin, checkAdminStatus } from "@/lib/actions/admin";
+import { seedFirstAdmin, checkAdminStatus } from "@/lib/actions/admin";
 import { useEffect } from "react";
 
 export default function AdminSetupPage() {
   const [email, setEmail] = useState("");
+  const [adminSeedKey, setAdminSeedKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -35,23 +36,27 @@ export default function AdminSetupPage() {
     checkStatus();
   }, []);
 
-  const handlePromoteToAdmin = async (e: React.FormEvent) => {
+  const handleSeedFirstAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage("");
     setError("");
 
+    if (!adminSeedKey.trim()) {
+      setError("Admin seed key is required");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const result = await promoteToAdmin();
-      setMessage(result.message || "Promoted to admin successfully!");
+      const result = await seedFirstAdmin(adminSeedKey);
+      setMessage(result.message || "First admin seeded successfully!");
 
       // Refresh admin status
       const status = await checkAdminStatus();
       setAdminStatus(status);
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to promote to admin"
-      );
+      setError(error instanceof Error ? error.message : "Failed to seed admin");
     } finally {
       setIsLoading(false);
     }
@@ -122,7 +127,7 @@ export default function AdminSetupPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handlePromoteToAdmin} className="space-y-4">
+              <form onSubmit={handleSeedFirstAdmin} className="space-y-4">
                 <div>
                   <Label htmlFor="email">Your Email</Label>
                   <Input
@@ -133,14 +138,28 @@ export default function AdminSetupPage() {
                     className="bg-muted"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    You will be promoted to admin role
+                    This account will be promoted to admin
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="adminSeedKey">Admin Seed Key</Label>
+                  <Input
+                    id="adminSeedKey"
+                    type="password"
+                    value={adminSeedKey}
+                    onChange={(e) => setAdminSeedKey(e.target.value)}
+                    placeholder="Enter admin seed key"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Secure key required to create the first admin (set in
+                    environment variables)
                   </p>
                 </div>
 
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading
-                    ? "Promoting to Admin..."
-                    : "Promote Yourself to Admin"}
+                  {isLoading ? "Seeding Admin..." : "Seed First Admin"}
                 </Button>
               </form>
             )}

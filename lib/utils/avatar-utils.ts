@@ -72,14 +72,162 @@ export function getUserInitials(
   return "UU"; // Ultimate fallback
 }
 
+// Magic number signatures for image files
+const IMAGE_SIGNATURES = {
+  jpeg: [0xff, 0xd8, 0xff],
+  png: [0x89, 0x50, 0x4e, 0x47],
+  gif: [0x47, 0x49, 0x46],
+  webp: [0x52, 0x49, 0x46, 0x46], // RIFF header, need to check WEBP at offset 8
+  bmp: [0x42, 0x4d],
+} as const;
+
 /**
- * Validate avatar file before upload
+ * Validate file content by checking magic numbers
  */
-export function validateAvatarFile(file: File): {
+async function validateFileContent(file: File): Promise<boolean> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const arrayBuffer = e.target?.result as ArrayBuffer;
+      if (!arrayBuffer) {
+        resolve(false);
+        return;
+      }
+
+      const bytes = new Uint8Array(arrayBuffer.slice(0, 12)); // Read first 12 bytes
+
+      // Check JPEG
+      if (
+        bytes.length >= 3 &&
+        bytes[0] === IMAGE_SIGNATURES.jpeg[0] &&
+        bytes[1] === IMAGE_SIGNATURES.jpeg[1] &&
+        bytes[2] === IMAGE_SIGNATURES.jpeg[2]
+      ) {
+        resolve(true);
+        return;
+      }
+
+      // Check PNG
+      if (
+        bytes.length >= 4 &&
+        bytes[0] === IMAGE_SIGNATURES.png[0] &&
+        bytes[1] === IMAGE_SIGNATURES.png[1] &&
+        bytes[2] === IMAGE_SIGNATURES.png[2] &&
+        bytes[3] === IMAGE_SIGNATURES.png[3]
+      ) {
+        resolve(true);
+        return;
+      }
+
+      // Check GIF
+      if (
+        bytes.length >= 3 &&
+        bytes[0] === IMAGE_SIGNATURES.gif[0] &&
+        bytes[1] === IMAGE_SIGNATURES.gif[1] &&
+        bytes[2] === IMAGE_SIGNATURES.gif[2]
+      ) {
+        resolve(true);
+        return;
+      }
+
+      // Check WebP (RIFF header + WEBP signature at offset 8)
+      if (
+        bytes.length >= 12 &&
+        bytes[0] === IMAGE_SIGNATURES.webp[0] &&
+        bytes[1] === IMAGE_SIGNATURES.webp[1] &&
+        bytes[2] === IMAGE_SIGNATURES.webp[2] &&
+        bytes[3] === IMAGE_SIGNATURES.webp[3] &&
+        bytes[8] === 0x57 &&
+        bytes[9] === 0x45 &&
+        bytes[10] === 0x42 &&
+        bytes[11] === 0x50
+      ) {
+        resolve(true);
+        return;
+      }
+
+      // Check BMP
+      if (
+        bytes.length >= 2 &&
+        bytes[0] === IMAGE_SIGNATURES.bmp[0] &&
+        bytes[1] === IMAGE_SIGNATURES.bmp[1]
+      ) {
+        resolve(true);
+        return;
+      }
+
+      resolve(false);
+    };
+
+    reader.onerror = () => resolve(false);
+    reader.readAsArrayBuffer(file.slice(0, 12));
+  });
+}
+
+/**
+ * Sanitize filename to prevent path traversal and injection attacks
+ */
+function sanitizeFilename(filename: string): string {
+  // Remove path separators and dangerous characters
+  let sanitized = filename.replace(/[<>:"/\\|?*\x00-\x1f]/g, "");
+
+  // Remove leading/trailing dots and spaces
+  sanitized = sanitized.replace(/^[.\s]+|[.\s]+$/g, "");
+
+  // Prevent reserved Windows names
+  const reservedNames = [
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    "COM1",
+    "COM2",
+    "COM3",
+    "COM4",
+    "COM5",
+    "COM6",
+    "COM7",
+    "COM8",
+    "COM9",
+    "LPT1",
+    "LPT2",
+    "LPT3",
+    "LPT4",
+    "LPT5",
+    "LPT6",
+    "LPT7",
+    "LPT8",
+    "LPT9",
+  ];
+  const nameWithoutExt = sanitized.split(".")[0].toUpperCase();
+  if (reservedNames.includes(nameWithoutExt)) {
+    sanitized = `file_${sanitized}`;
+  }
+
+  // Limit length
+  if (sanitized.length > 100) {
+    const ext = sanitized.split(".").pop();
+    const nameLength = 100 - (ext ? ext.length + 1 : 0);
+    sanitized = sanitized.substring(0, nameLength) + (ext ? `.${ext}` : "");
+  }
+
+  // Fallback if empty
+  if (!sanitized) {
+    sanitized = "file";
+  }
+
+  return sanitized;
+}
+
+/**
+ * Validate avatar file before upload with enhanced security
+ */
+export async function validateAvatarFile(file: File): Promise<{
   valid: boolean;
   error?: string;
-} {
-  // Check file type
+  sanitizedName?: string;
+}> {
+  // Check file type (MIME type check)
   const allowedTypes = [
     "image/jpeg",
     "image/jpg",
@@ -114,15 +262,23 @@ export function validateAvatarFile(file: File): {
     };
   }
 
-  // Check file name length
-  if (file.name.length > 100) {
+  // Validate file content using magic numbers
+  const isValidContent = await validateFileContent(file);
+  if (!isValidContent) {
     return {
       valid: false,
-      error: "File name is too long. Please rename the file and try again.",
+      error:
+        "File content does not match a valid image format. The file may be corrupted or not a real image.",
     };
   }
 
-  return { valid: true };
+  // Sanitize filename
+  const sanitizedName = sanitizeFilename(file.name);
+
+  return {
+    valid: true,
+    sanitizedName,
+  };
 }
 
 /**

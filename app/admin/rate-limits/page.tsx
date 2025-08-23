@@ -212,36 +212,22 @@ export default function AdminRateLimitsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-sm">Rate Limiting Enabled:</span>
+              <span className="text-sm">Rate Limiting:</span>
+              <Badge variant="default">Enabled</Badge>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm">Redis Connection:</span>
               <Badge
                 variant={
-                  process.env.RATE_LIMIT_ENABLED !== "false"
-                    ? "default"
-                    : "secondary"
+                  redisStatus === "connected" ? "default" : "destructive"
                 }
               >
-                {process.env.RATE_LIMIT_ENABLED !== "false" ? "Yes" : "No"}
+                {redisStatus === "connected" ? "Connected" : "Disconnected"}
               </Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm">Bypass Token Set:</span>
-              <Badge
-                variant={
-                  process.env.RATE_LIMIT_BYPASS_TOKEN ? "default" : "secondary"
-                }
-              >
-                {process.env.RATE_LIMIT_BYPASS_TOKEN ? "Yes" : "No"}
-              </Badge>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm">Redis URL Set:</span>
-              <Badge
-                variant={
-                  process.env.UPSTASH_REDIS_REST_URL ? "default" : "destructive"
-                }
-              >
-                {process.env.UPSTASH_REDIS_REST_URL ? "Yes" : "No"}
-              </Badge>
+              <span className="text-sm">Security Headers:</span>
+              <Badge variant="default">Configured</Badge>
             </div>
           </CardContent>
         </Card>
@@ -401,19 +387,13 @@ export default function AdminRateLimitsPage() {
 
           <div className="p-3 bg-blue-50 border border-blue-200 rounded">
             <p className="text-sm text-blue-700">
-              <strong>Bypass Token:</strong>{" "}
-              {process.env.RATE_LIMIT_BYPASS_TOKEN
-                ? "Set in environment"
-                : "Not configured"}
+              <strong>Rate Limit Bypass:</strong> Available for testing purposes
+              via secure header authentication.
             </p>
-            {process.env.RATE_LIMIT_BYPASS_TOKEN && (
-              <p className="text-xs text-blue-600 mt-1">
-                Use header:{" "}
-                <code>
-                  X-Rate-Limit-Bypass: {process.env.RATE_LIMIT_BYPASS_TOKEN}
-                </code>
-              </p>
-            )}
+            <p className="text-xs text-blue-600 mt-1">
+              Contact system administrator for bypass token if needed for
+              testing.
+            </p>
           </div>
         </CardContent>
       </Card>

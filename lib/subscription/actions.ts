@@ -36,13 +36,24 @@ export async function hasActiveSubscription(userId: string): Promise<boolean> {
 export async function getSubscriptionUsage(userId: string) {
   const subscription = await getUserSubscription(userId);
   if (!subscription) {
-    // Default for free users - they get 3 AI posts
+    // For free users, check if they have a profile with usage tracking
+    const supabase = await createClient();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("ai_posts_used")
+      .eq("user_id", userId)
+      .single();
+
+    const aiPostsUsed = profile?.ai_posts_used || 0;
+    const aiPostsLimit = 3;
+    const remainingPosts = Math.max(0, aiPostsLimit - aiPostsUsed);
+
     return {
       plan: "free" as SubscriptionPlan,
-      aiPostsUsed: 0,
-      aiPostsLimit: 3,
-      canGenerateAI: true, // Free users can generate AI posts up to their limit
-      remainingPosts: 3,
+      aiPostsUsed,
+      aiPostsLimit,
+      canGenerateAI: remainingPosts > 0,
+      remainingPosts,
     };
   }
 
@@ -74,29 +85,57 @@ export async function incrementAIPostUsage(userId: string): Promise<boolean> {
     .eq("status", "active")
     .single();
 
-  if (!subscription) {
-    return false;
+  if (subscription) {
+    // Handle subscribed users
+    if (subscription.ai_posts_used >= subscription.ai_posts_limit) {
+      return false;
+    }
+
+    const { error } = await supabase
+      .from("subscriptions")
+      .update({
+        ai_posts_used: subscription.ai_posts_used + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId)
+      .eq("status", "active");
+
+    if (error) {
+      console.error("Error incrementing AI post usage:", error);
+      return false;
+    }
+
+    return true;
+  } else {
+    // Handle free users - update their profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("ai_posts_used")
+      .eq("user_id", userId)
+      .single();
+
+    const currentUsage = profile?.ai_posts_used || 0;
+    const freeLimit = 3;
+
+    if (currentUsage >= freeLimit) {
+      return false;
+    }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        ai_posts_used: currentUsage + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error incrementing AI post usage for free user:", error);
+      return false;
+    }
+
+    return true;
   }
-
-  if (subscription.ai_posts_used >= subscription.ai_posts_limit) {
-    return false;
-  }
-
-  const { error } = await supabase
-    .from("subscriptions")
-    .update({
-      ai_posts_used: subscription.ai_posts_used + 1,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId)
-    .eq("status", "active");
-
-  if (error) {
-    console.error("Error incrementing AI post usage:", error);
-    return false;
-  }
-
-  return true;
 }
 
 export async function createSubscription(

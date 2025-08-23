@@ -74,36 +74,20 @@ export async function uploadProfileImage(
   const supabase = await createClient();
 
   try {
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
+    // Import validation function
+    const { validateAvatarFile } = await import("@/lib/utils/avatar-utils");
+
+    // Enhanced file validation with magic number checking
+    const validation = await validateAvatarFile(file);
+    if (!validation.valid) {
       return {
         success: false,
-        error: "Please select a valid image file (JPG, PNG, WebP, or GIF)",
+        error: validation.error || "File validation failed",
       };
     }
 
-    // Validate file size (2MB limit) with detailed error message
-    const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
-    if (file.size > maxSizeInBytes) {
-      const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(1);
-      return {
-        success: false,
-        error: `File size (${fileSizeInMB}MB) exceeds the 2MB limit. Please choose a smaller image.`,
-      };
-    }
-
-    // Additional validation for very small files (likely corrupted)
-    if (file.size < 1024) {
-      // Less than 1KB
-      return {
-        success: false,
-        error:
-          "File appears to be corrupted or too small. Please select a valid image.",
-      };
-    }
-
-    // Generate unique file name with user ID folder structure
-    const fileExt = file.name.split(".").pop();
+    // Generate secure file name with user ID folder structure
+    const fileExt = validation.sanitizedName?.split(".").pop() || "jpg";
     const fileName = `avatar.${fileExt}`;
     const filePath = `${userId}/${fileName}`;
 
