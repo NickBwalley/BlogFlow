@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { type UseSupabaseUploadReturn } from "@/hooks/use-supabase-upload";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, File, Loader2, Upload, X } from "lucide-react";
@@ -107,7 +108,6 @@ const DropzoneContent = ({ className }: { className?: string }) => {
       >
         <CheckCircle size={16} className="text-primary" />
         <p className="text-primary text-sm">
-          {/* eslint-disable-next-line react/no-unescaped-entities */}
           Successfully uploaded {files.length} file{files.length > 1 ? "s" : ""}
         </p>
       </div>
@@ -127,11 +127,17 @@ const DropzoneContent = ({ className }: { className?: string }) => {
           >
             {file.type.startsWith("image/") ? (
               <div className="h-10 w-10 rounded border overflow-hidden shrink-0 bg-muted flex items-center justify-center">
-                <img
-                  src={file.preview}
-                  alt={file.name}
-                  className="object-cover"
-                />
+                {file.preview ? (
+                  <Image
+                    src={file.preview}
+                    alt={file.name}
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
+                ) : (
+                  <File size={18} />
+                )}
               </div>
             ) : (
               <div className="h-10 w-10 rounded border bg-muted flex items-center justify-center">
@@ -190,7 +196,6 @@ const DropzoneContent = ({ className }: { className?: string }) => {
       })}
       {exceedMaxFiles && (
         <p className="text-sm text-left mt-2 text-destructive">
-          {/* eslint-disable-next-line react/no-unescaped-entities */}
           You may upload only up to {maxFiles} files, please remove{" "}
           {files.length - maxFiles} file
           {files.length - maxFiles > 1 ? "s" : ""}.
@@ -229,7 +234,6 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
     <div className={cn("flex flex-col items-center gap-y-2", className)}>
       <Upload size={20} className="text-muted-foreground" />
       <p className="text-sm">
-        {/* eslint-disable-next-line react/no-unescaped-entities */}
         Upload{!!maxFiles && maxFiles > 1 ? ` ${maxFiles}` : ""} file
         {!maxFiles || maxFiles > 1 ? "s" : ""}
       </p>
