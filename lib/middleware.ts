@@ -69,12 +69,24 @@ export async function updateSession(request: NextRequest) {
   // If user is authenticated and trying to access admin routes, check admin role
   if (user && request.nextUrl.pathname.startsWith("/admin")) {
     try {
-      // Get user profile to check role
-      const { data: profile, error } = await supabase
+      // Set a timeout for the database call to prevent hanging
+      const adminCheckPromise = supabase
         .from("profiles")
         .select("role")
         .eq("user_id", user.sub)
         .single();
+
+      // Use Promise.race to timeout after 2 seconds
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Admin check timeout")), 2000)
+      );
+
+      const result = (await Promise.race([
+        adminCheckPromise,
+        timeoutPromise,
+      ])) as { data: { role: string } | null; error: Error | null };
+
+      const { data: profile, error } = result;
 
       // If not admin, redirect to dashboard
       if (error || profile?.role !== "admin") {

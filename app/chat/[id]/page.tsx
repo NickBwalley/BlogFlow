@@ -16,13 +16,28 @@ export default function ChatIdPage() {
 
   const loadChatMessages = async (id: string) => {
     setIsLoadingChat(true);
-    const result = await getChatWithMessages(id);
-    if (result.success && result.data) {
-      setChatMessages(result.data.messages || []);
-    } else {
+    try {
+      // Add timeout to prevent hanging
+      const chatPromise = getChatWithMessages(id);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Chat fetch timeout")), 8000)
+      );
+
+      const result = (await Promise.race([chatPromise, timeoutPromise])) as {
+        success: boolean;
+        data?: { messages: Message[] };
+      };
+      if (result.success && result.data) {
+        setChatMessages(result.data.messages || []);
+      } else {
+        setChatMessages([]);
+      }
+    } catch (error) {
+      console.error("Failed to load chat messages:", error);
       setChatMessages([]);
+    } finally {
+      setIsLoadingChat(false);
     }
-    setIsLoadingChat(false);
   };
 
   useEffect(() => {
