@@ -85,22 +85,49 @@ export async function getAdminBlogs() {
   return data;
 }
 
-// Admin action to get all subscriptions
+// Admin action to get all subscriptions with user email
 export async function getAdminSubscriptions() {
   await checkAdminAccess();
 
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .select("*")
-    .order("created_at", { ascending: false });
+  // Fetch subscriptions and profiles separately, then join them
+  const [subscriptionsResult, profilesResult] = await Promise.all([
+    supabase
+      .from("subscriptions")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    supabase.from("profiles").select("user_id, email"),
+  ]);
 
-  if (error) {
-    throw new Error(`Failed to fetch subscriptions: ${error.message}`);
+  if (subscriptionsResult.error) {
+    throw new Error(
+      `Failed to fetch subscriptions: ${subscriptionsResult.error.message}`
+    );
   }
 
-  return data;
+  if (profilesResult.error) {
+    throw new Error(
+      `Failed to fetch profiles: ${profilesResult.error.message}`
+    );
+  }
+
+  // Create a map of user_id to email for quick lookup
+  const emailMap = new Map(
+    profilesResult.data?.map((profile) => [profile.user_id, profile.email]) ||
+      []
+  );
+
+  // Join the data manually
+  const subscriptionsWithEmail =
+    subscriptionsResult.data?.map((subscription) => ({
+      ...subscription,
+      profiles: {
+        email: emailMap.get(subscription.user_id) || "Unknown",
+      },
+    })) || [];
+
+  return subscriptionsWithEmail;
 }
 
 // Admin action to get analytics data
@@ -226,8 +253,8 @@ export async function getCurrentUserProfile() {
   };
 }
 
-// Bootstrap function to add the first admin (when no admins exist yet)
-export async function addFirstAdmin(email: string) {
+// Bootstrap function to promote the current user to admin (when no admins exist yet)
+export async function promoteToAdmin() {
   const supabase = await createClient();
 
   const {
@@ -239,18 +266,13 @@ export async function addFirstAdmin(email: string) {
     throw new Error(`Authentication error: ${userError?.message || "No user"}`);
   }
 
-  // Check if user's email matches the provided email
-  if (user.email !== email) {
-    throw new Error("You can only add yourself as admin");
-  }
-
-  // Use the database function to add admin
-  const { data, error } = await supabase.rpc("add_admin_by_email", {
-    admin_email: email,
+  // Use the database function to promote user to admin
+  const { data, error } = await supabase.rpc("promote_user_to_admin", {
+    target_user_id: user.id,
   });
 
   if (error) {
-    throw new Error(`Failed to add admin: ${error.message}`);
+    throw new Error(`Failed to promote to admin: ${error.message}`);
   }
 
   return { success: true, message: data };
@@ -269,31 +291,21 @@ export async function checkAdminStatus() {
     throw new Error(`Authentication error: ${userError?.message || "No user"}`);
   }
 
-  // Check if user is in admin_users table
-  const { data: adminUsers, error: adminError } = await supabase
-    .from("admin_users")
-    .select("email")
-    .eq("email", user.email)
-    .single();
-
-  const isAdminByEmail = !adminError && adminUsers;
-
-  // Also check the role field in profiles
+  // Check the role field in profiles
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
     .eq("user_id", user.id)
     .single();
 
-  const isAdminByRole = !profileError && profile?.role === "admin";
+  const isAdmin = !profileError && profile?.role === "admin";
 
   return {
     user: {
       id: user.id,
       email: user.email,
     },
-    isAdminByEmail,
-    isAdminByRole,
-    canAccessAdmin: isAdminByEmail || isAdminByRole,
+    isAdmin,
+    canAccessAdmin: isAdmin,
   };
 }

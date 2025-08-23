@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { testRedisConnection } from "@/lib/upstash";
-import { rateLimitConfigs } from "@/lib/rate-limit";
+import { rateLimitConfigs } from "@/lib/rate-limit-config";
 
 interface RateLimitInfo {
   endpoint: string;

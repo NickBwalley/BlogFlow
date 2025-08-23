@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { addFirstAdmin, checkAdminStatus } from "@/lib/actions/admin";
+import { promoteToAdmin, checkAdminStatus } from "@/lib/actions/admin";
 import { useEffect } from "react";
 
 export default function AdminSetupPage() {
@@ -35,21 +35,23 @@ export default function AdminSetupPage() {
     checkStatus();
   }, []);
 
-  const handleAddAdmin = async (e: React.FormEvent) => {
+  const handlePromoteToAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage("");
     setError("");
 
     try {
-      const result = await addFirstAdmin(email);
-      setMessage(result.message || "Admin added successfully!");
+      const result = await promoteToAdmin();
+      setMessage(result.message || "Promoted to admin successfully!");
 
       // Refresh admin status
       const status = await checkAdminStatus();
       setAdminStatus(status);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to add admin");
+      setError(
+        error instanceof Error ? error.message : "Failed to promote to admin"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -86,19 +88,9 @@ export default function AdminSetupPage() {
               <strong>Email:</strong> {adminStatus?.user?.email}
             </div>
             <div>
-              <strong>Admin by Email:</strong>{" "}
-              <Badge
-                variant={adminStatus?.isAdminByEmail ? "default" : "secondary"}
-              >
-                {adminStatus?.isAdminByEmail ? "Yes" : "No"}
-              </Badge>
-            </div>
-            <div>
-              <strong>Admin by Role:</strong>{" "}
-              <Badge
-                variant={adminStatus?.isAdminByRole ? "default" : "secondary"}
-              >
-                {adminStatus?.isAdminByRole ? "Yes" : "No"}
+              <strong>Admin Role:</strong>{" "}
+              <Badge variant={adminStatus?.isAdmin ? "default" : "secondary"}>
+                {adminStatus?.isAdmin ? "Yes" : "No"}
               </Badge>
             </div>
             <div>
@@ -130,24 +122,25 @@ export default function AdminSetupPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleAddAdmin} className="space-y-4">
+              <form onSubmit={handlePromoteToAdmin} className="space-y-4">
                 <div>
                   <Label htmlFor="email">Your Email</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    required
+                    readOnly
+                    className="bg-muted"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    This must match your logged-in email
+                    You will be promoted to admin role
                   </p>
                 </div>
 
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "Adding Admin..." : "Add Yourself as Admin"}
+                  {isLoading
+                    ? "Promoting to Admin..."
+                    : "Promote Yourself to Admin"}
                 </Button>
               </form>
             )}
@@ -174,17 +167,18 @@ export default function AdminSetupPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm">
-            <strong>Email-based Admin:</strong> Your email is added to the
-            admin_users table, giving you full access through RLS policies.
-          </p>
-          <p className="text-sm">
             <strong>Role-based Admin:</strong> Your profile role is set to
-            'admin' in the profiles table.
+            'admin' in the profiles table, giving you full access to admin
+            features.
           </p>
           <p className="text-sm">
-            <strong>Both methods work:</strong> You only need one of them to
-            access admin features. The email-based method is more secure and
-            doesn't cause recursion issues.
+            <strong>Default Role:</strong> New user registrations automatically
+            get the 'user' role. Only existing admins can promote other users to
+            admin.
+          </p>
+          <p className="text-sm">
+            <strong>Bootstrap Admin:</strong> If no admins exist yet, any user
+            can promote themselves to admin to bootstrap the system.
           </p>
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
             <p className="text-sm text-blue-700">

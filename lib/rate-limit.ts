@@ -1,69 +1,10 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { redis } from "@/lib/upstash";
 import { NextRequest } from "next/server";
+import { rateLimitConfigs, type RateLimitType } from "@/lib/rate-limit-config";
 
-// Rate limit configurations - reasonable limits for production use
-export const rateLimitConfigs = {
-  // Public endpoints - more reasonable limits
-  public: {
-    requests: 100,
-    window: "1 h", // 100 requests per hour per IP
-  },
-  publicMinute: {
-    requests: 20,
-    window: "1 m", // 20 requests per minute per IP
-  },
-
-  // Authentication endpoints - prevent brute force
-  authLogin: {
-    requests: 10,
-    window: "15 m", // 10 login attempts per 15 minutes per IP
-  },
-  authSignup: {
-    requests: 5,
-    window: "1 h", // 5 signup attempts per hour per IP
-  },
-  authPasswordReset: {
-    requests: 3,
-    window: "1 h", // 3 password reset attempts per hour per IP
-  },
-
-  // API endpoints - general limits
-  apiUser: {
-    requests: 100,
-    window: "1 h", // 100 requests per hour per IP/user
-  },
-  apiUserMinute: {
-    requests: 20,
-    window: "1 m", // 20 requests per minute per IP/user
-  },
-
-  // Chat specific limits - strict 5 per minute
-  chat: {
-    requests: 5,
-    window: "1 m", // 5 chat messages per minute
-  },
-  chatHourly: {
-    requests: 100,
-    window: "1 h", // 100 chat messages per hour
-  },
-
-  // Blog generation specific limits - strict 5 per minute
-  blogGeneration: {
-    requests: 5,
-    window: "1 m", // 5 blog generations per minute
-  },
-  blogGenerationHourly: {
-    requests: 50,
-    window: "1 h", // 50 blog generations per hour
-  },
-
-  // Admin endpoints - higher limits
-  admin: {
-    requests: 500,
-    window: "1 h", // 500 requests per hour per admin
-  },
-} as const;
+// Re-export for backward compatibility
+export { rateLimitConfigs, type RateLimitType };
 
 // Create rate limiters for different scenarios
 export const rateLimiters = {
@@ -194,17 +135,6 @@ export const rateLimiters = {
   }),
 };
 
-// Rate limit types for easy reference
-export type RateLimitType =
-  | "public"
-  | "auth-login"
-  | "auth-signup"
-  | "auth-password-reset"
-  | "api-user"
-  | "chat"
-  | "blog-generation"
-  | "admin";
-
 // Helper function to get client IP address
 export function getClientIP(request: NextRequest): string {
   // Check for various IP headers in order of priority
@@ -244,9 +174,21 @@ export async function getUserIdFromRequest(
 // Check if user is admin (for admin rate limiting)
 export async function isAdminUser(userId: string): Promise<boolean> {
   try {
-    // TODO: Implement admin check based on your user system
-    // This could check your database or cache for admin status
-    return false;
+    const { createClient } = await import("@/lib/server");
+    const supabase = await createClient();
+
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", userId)
+      .single();
+
+    if (error) {
+      console.error("Error checking admin status:", error);
+      return false;
+    }
+
+    return profile?.role === "admin";
   } catch (error) {
     console.error("Error checking admin status:", error);
     return false;

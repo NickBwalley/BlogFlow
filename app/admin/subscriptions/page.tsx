@@ -20,6 +20,9 @@ interface SubscriptionData {
   trial_end: string | null;
   created_at: string;
   updated_at: string;
+  profiles: {
+    email: string;
+  };
 }
 
 export default function AdminSubscriptionsPage() {
@@ -136,12 +139,13 @@ export default function AdminSubscriptionsPage() {
           ) : (
             <div className="space-y-4">
               <div className="hidden xl:grid xl:grid-cols-12 gap-4 pb-2 border-b text-sm font-medium text-muted-foreground">
+                <div className="col-span-2">User Email</div>
                 <div className="col-span-2">Plan</div>
                 <div className="col-span-1">Status</div>
                 <div className="col-span-2">AI Usage</div>
                 <div className="col-span-2">Period</div>
-                <div className="col-span-2">Trial</div>
-                <div className="col-span-2">Created</div>
+                <div className="col-span-1">Trial</div>
+                <div className="col-span-1">Created</div>
                 <div className="col-span-1">Auto-Cancel</div>
               </div>
 
@@ -150,6 +154,13 @@ export default function AdminSubscriptionsPage() {
                   key={subscription.id}
                   className="grid grid-cols-1 xl:grid-cols-12 gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
+                  {/* User Email */}
+                  <div className="xl:col-span-2 flex items-center">
+                    <div className="text-sm font-medium truncate">
+                      {subscription.profiles.email}
+                    </div>
+                  </div>
+
                   {/* Plan Type */}
                   <div className="xl:col-span-2 flex items-center">
                     <Badge
@@ -228,9 +239,9 @@ export default function AdminSubscriptionsPage() {
                   </div>
 
                   {/* Trial Info */}
-                  <div className="xl:col-span-2 flex items-center">
+                  <div className="xl:col-span-1 flex items-center">
                     {subscription.trial_start && subscription.trial_end ? (
-                      <div className="text-sm space-y-1">
+                      <div className="text-center">
                         <Badge
                           variant={
                             isTrialActive(
@@ -246,26 +257,19 @@ export default function AdminSubscriptionsPage() {
                             subscription.trial_start,
                             subscription.trial_end
                           )
-                            ? "Active Trial"
-                            : "Trial Ended"}
+                            ? "Active"
+                            : "Ended"}
                         </Badge>
-                        <div className="text-xs text-muted-foreground">
-                          Until{" "}
-                          {format(
-                            new Date(subscription.trial_end),
-                            "MMM dd, yyyy"
-                          )}
-                        </div>
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         No trial
                       </span>
                     )}
                   </div>
 
                   {/* Created Date */}
-                  <div className="xl:col-span-2 flex items-center">
+                  <div className="xl:col-span-1 flex items-center">
                     <span className="text-sm text-muted-foreground">
                       {formatDistanceToNow(new Date(subscription.created_at), {
                         addSuffix: true,
@@ -288,6 +292,9 @@ export default function AdminSubscriptionsPage() {
 
                   {/* Mobile Layout */}
                   <div className="xl:hidden mt-2 space-y-2">
+                    <div className="text-sm font-medium mb-2">
+                      {subscription.profiles.email}
+                    </div>
                     <div className="grid grid-cols-2 gap-4 text-xs">
                       <div>
                         <span className="text-muted-foreground">Status:</span>{" "}
