@@ -1,9 +1,9 @@
-import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { GlobalLayoutWrapper } from "@/components/layout/global-layout-wrapper";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  return <DashboardLayoutWrapper>{children}</DashboardLayoutWrapper>;
+  return <GlobalLayoutWrapper requireAuth>{children}</GlobalLayoutWrapper>;
 }

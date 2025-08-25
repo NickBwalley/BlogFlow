@@ -1,9 +1,9 @@
-import { AdminLayoutWrapper } from "@/components/layout/admin-layout-wrapper";
+import { GlobalLayoutWrapper } from "@/components/layout/global-layout-wrapper";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  return <AdminLayoutWrapper>{children}</AdminLayoutWrapper>;
+  return <GlobalLayoutWrapper requireAuth>{children}</GlobalLayoutWrapper>;
 }

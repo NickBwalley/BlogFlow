@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Clock, Eye } from "lucide-react";
 import { BlogListItem } from "@/types/blog";
-import { getBlogImageUrl } from "@/lib/utils/image-utils";
+import { getBlogImageWithDefault } from "@/lib/utils/default-image";
 import { getReadTime } from "@/lib/utils/read-time";
 
 interface FeaturedBlogCardProps {
@@ -23,10 +23,15 @@ export function FeaturedBlogCard({
   readTime,
   views = 0,
 }: FeaturedBlogCardProps) {
-  const imageUrl = getBlogImageUrl(blog.image_path);
+  // Handle potential undefined blog object
+  if (!blog) {
+    return null;
+  }
+
+  const imageUrl = getBlogImageWithDefault(blog.image, blog.image_path);
 
   // Calculate dynamic read time
-  const dynamicReadTime = readTime || getReadTime(blog.content, 1);
+  const dynamicReadTime = readTime || getReadTime(blog.content || "", 1);
 
   return (
     <Card className="group overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -84,7 +89,7 @@ export function FeaturedBlogCard({
             <div className="space-y-4">
               <h2 className="text-3xl lg:text-4xl font-bold leading-tight tracking-tight group-hover:text-primary transition-colors">
                 <Link href={`/blogs/${blog.slug || blog.id}`}>
-                  {blog.title}
+                  {blog.title || "Untitled"}
                 </Link>
               </h2>
 
@@ -109,13 +114,17 @@ export function FeaturedBlogCard({
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
-                  <span className="font-medium">{blog.author}</span>
+                  <span className="font-medium">
+                    {blog.author || "Anonymous"}
+                  </span>
                   <span className="text-sm text-muted-foreground">
-                    {new Date(blog.created_at).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                    {blog.created_at
+                      ? new Date(blog.created_at).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : ""}
                   </span>
                 </div>
               </div>

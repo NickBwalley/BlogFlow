@@ -54,6 +54,8 @@ export function PricingPlans({
         return <Check className="h-6 w-6 text-green-500" />;
       case "pro":
         return <Crown className="h-6 w-6 text-purple-500" />;
+      case "enterprise":
+        return <Crown className="h-6 w-6 text-amber-500" />;
       default:
         return <Zap className="h-6 w-6" />;
     }
@@ -61,7 +63,7 @@ export function PricingPlans({
 
   const isCurrentPlan = (planKey: string) => currentPlan === planKey;
   const isUpgrade = (planKey: string) => {
-    const planOrder = { free: 0, starter: 1, pro: 2 };
+    const planOrder = { free: 0, starter: 1, pro: 2, enterprise: 3 };
     return planOrder[planKey as SubscriptionPlan] > planOrder[currentPlan];
   };
 
@@ -118,7 +120,7 @@ export function PricingPlans({
         </Card>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-4 gap-6">
         {Object.entries(SUBSCRIPTION_PLANS).map(([key, plan]) => {
           const planKey = key as SubscriptionPlan;
           const isCurrent = isCurrentPlan(planKey);
