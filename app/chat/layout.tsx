@@ -1,9 +1,9 @@
-import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { GlobalLayoutWrapper } from "@/components/layout/global-layout-wrapper";
 
 interface ChatLayoutProps {
   children: React.ReactNode;
 }
 
 export default function ChatLayout({ children }: ChatLayoutProps) {
-  return <DashboardLayoutWrapper>{children}</DashboardLayoutWrapper>;
+  return <GlobalLayoutWrapper requireAuth>{children}</GlobalLayoutWrapper>;
 }

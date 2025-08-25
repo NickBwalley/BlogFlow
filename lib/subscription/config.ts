@@ -50,6 +50,26 @@ export const SUBSCRIPTION_PLANS = {
     aiPostsLimit: 30,
     popular: false,
   },
+  enterprise: {
+    id: "enterprise",
+    name: "Enterprise",
+    description: "For large teams and enterprise organizations",
+    price: 9999, // in cents
+    priceFormatted: "$99.99",
+    interval: "month",
+    features: [
+      "Everything in Pro",
+      "300 AI-generated blog posts per month",
+      "Advanced team collaboration",
+      "White-label options",
+      "Dedicated account manager",
+      "SLA guarantee",
+      "Custom integrations",
+      "Advanced security features",
+    ],
+    aiPostsLimit: 300,
+    popular: false,
+  },
 } as const;
 
 export type SubscriptionPlan = keyof typeof SUBSCRIPTION_PLANS;

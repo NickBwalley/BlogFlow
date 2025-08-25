@@ -199,25 +199,11 @@ export function Header({ variant = "light" }: HeaderProps) {
                   Featured
                 </Link>
                 <Link
-                  href="/blogs?view=all"
+                  href="/dashboard"
                   className={`text-sm font-medium ${styles.textMuted} ${styles.textHover} transition-colors py-2`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  All Blogs
-                </Link>
-                <Link
-                  href="/about"
-                  className={`text-sm font-medium ${styles.textMuted} ${styles.textHover} transition-colors py-2`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  About
-                </Link>
-                <Link
-                  href="/contact"
-                  className={`text-sm font-medium ${styles.textMuted} ${styles.textHover} transition-colors py-2`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Contact
+                  My Blogs
                 </Link>
                 {isAuthenticated && (
                   <Link
