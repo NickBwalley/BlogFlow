@@ -253,10 +253,13 @@ export function GlobalSidebar({
         {user ? (
           <>
             {/* Subscription Status */}
-            <SubscriptionStatus
-              key={subscriptionRefreshTrigger}
-              className="text-xs"
-            />
+            <div className="text-xs">
+              <SubscriptionStatus
+                userId={user.id}
+                key={subscriptionRefreshTrigger}
+                refreshTrigger={subscriptionRefreshTrigger}
+              />
+            </div>
 
             {/* User Profile */}
             <div className="flex items-center gap-3">
