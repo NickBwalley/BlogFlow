@@ -66,7 +66,17 @@ export function SignUpForm({
 
       // Success - user created
       if (data.user) {
-        router.push("/auth/sign-up-success");
+        // Check if user is immediately confirmed (no email confirmation required)
+        if (data.session) {
+          // Force a brief delay to ensure auth state propagates
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // User is immediately logged in, redirect to dashboard
+          window.location.href = "/dashboard";
+        } else {
+          // User needs email confirmation, show success page
+          router.push("/auth/sign-up-success");
+        }
       } else {
         setError("Signup failed. Please try again.");
       }

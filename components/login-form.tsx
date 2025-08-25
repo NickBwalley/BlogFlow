@@ -13,7 +13,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function LoginForm({
@@ -24,7 +23,6 @@ export function LoginForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,18 +31,25 @@ export function LoginForm({
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
-      // Redirect to dashboard after successful login
-      router.push("/dashboard");
+
+      // Wait for auth state to be properly established
+      if (data.session) {
+        // Force a brief delay to ensure auth state propagates
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Use window.location.href for more reliable redirect
+        window.location.href = "/dashboard";
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
       setIsLoading(false);
     }
+    // Don't set loading to false here - let the redirect handle it
   };
 
   return (
